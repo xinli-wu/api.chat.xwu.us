@@ -1,0 +1,25 @@
+{
+  "name": "api.chat.xwu.us",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "repository": "git@github.com:xinli-wu/api.chat.xwu.us.git",
+  "author": "Xinli WU <ryan7gm@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon",
+    "build": "esbuild src/index.js --bundle --minify --platform=node --external:./node_modules/* --outfile=dist/index.js",
+    "serve": "node dist/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.7",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mime": "^3.0.0",
+    "openai": "^3.2.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.17.8",
+    "nodemon": "^2.0.20"
+  }
+}

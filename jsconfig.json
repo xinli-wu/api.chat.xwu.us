@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "checkJs": true
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
