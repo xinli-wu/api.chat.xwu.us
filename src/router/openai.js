@@ -12,7 +12,7 @@ const openai = new OpenAIApi(configuration);
 // middleware that is specific to this router
 router.use(async (req, res, next) => {
 
-  console.log([dayjs().toISOString()], `'${req.path}'`, req.params, req.query, req.body);
+  // console.log([dayjs().toISOString()], `'${req.path}'`, req.params, req.query, req.body);
   next();
 });
 
@@ -23,10 +23,34 @@ router.post('/chat/completion', async (req, res) => {
       model: "gpt-3.5-turbo",
       messages: messages,
       temperature: 0.6,
-      max_tokens: 1000
+      max_tokens: 1000,
+      stream: true
+    }, { responseType: 'stream' });
+
+    // console.log('==============================================================================');
+    // console.log(typeof (completion.data));
+
+    completion.data.on('data', data => {
+      const lines = data.toString().split('\n').filter(line => line.trim() !== '');
+      // console.log(lines);
+      // for (const line of lines) {
+      //   const message = line.replace(/^data: /, '');
+      //   if (message === '[DONE]') {
+      //     console.log('[done]');
+      //     return; // Stream finished
+      //   }
+      //   try {
+      //     const parsed = JSON.parse(message);
+      //     console.log(parsed.choices[0].text);
+      //   } catch (error) {
+      //     console.error('Could not JSON parse stream message', message, error);
+      //   }
+      // }
     });
 
-    res.send({ message: completion.data.choices[0].message });
+    completion.data.pipe(res);
+
+    // res.send({ message: completion.data.choices[0].message });
   } catch (error) {
     // Consider adjusting the error handling logic for your use case
     if (error.response) {
