@@ -4,7 +4,8 @@ config();
 const express = require('express');
 const openai = require('./router/openai');
 const cors = require('cors');
-
+const conn = require('./db/conn');
+conn();
 const app = express();
 const port = 4000;
 

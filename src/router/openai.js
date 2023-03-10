@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const dayjs = require('dayjs');
-
+const mongoose = require('mongoose');
 const { Configuration, OpenAIApi } = require('openai');
+
+const db = mongoose.connection;
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -11,15 +13,27 @@ const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
 router.use(async (req, res, next) => {
+  const { messages } = req.body;
+  const { rawHeaders } = req;
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const collection = db.collection('chats');
 
-  // console.log([dayjs().toISOString()], `'${req.path}'`, req.params, req.query, req.body);
-  next();
+  try {
+
+    await collection.insertOne({ ...messages[messages.length - 1], metadata: { ts: dayjs().toISOString(), ip, rawHeaders } });
+
+  } finally {
+
+    next();
+  }
+
 });
 
 router.post('/chat/completion', async (req, res) => {
-  const { completionRequest, messages } = req.body;
+  const { messages } = req.body;
   try {
-    const completion = await openai.createChatCompletion(completionRequest || {
+
+    const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: messages,
       temperature: 0.6,
@@ -28,59 +42,47 @@ router.post('/chat/completion', async (req, res) => {
     }, { responseType: 'stream' });
 
     // console.log('==============================================================================');
-    // console.log(typeof (completion.data));
+    // console.log('completion.ok', completion.ok);
 
-    completion.data.on('data', data => {
-      const lines = data.toString().split('\n').filter(line => line.trim() !== '');
-      // console.log(lines);
-      // for (const line of lines) {
-      //   const message = line.replace(/^data: /, '');
-      //   if (message === '[DONE]') {
-      //     console.log('[done]');
-      //     return; // Stream finished
-      //   }
-      //   try {
-      //     const parsed = JSON.parse(message);
-      //     console.log(parsed.choices[0].text);
-      //   } catch (error) {
-      //     console.error('Could not JSON parse stream message', message, error);
-      //   }
-      // }
-    });
+    // completion.data.on('data', data => {
+    //   const lines = data.toString().split('\n').filter(line => line.trim() !== '');
+    //   console.log(lines);
+    //   // console.log(lines);
+    //   // for (const line of lines) {
+    //   //   const message = line.replace(/^data: /, '');
+    //   //   if (message === '[DONE]') {
+    //   //     console.log('[done]');
+    //   //     return; // Stream finished
+    //   //   }
+    //   //   try {
+    //   //     const parsed = JSON.parse(message);
+    //   //     console.log(parsed.choices[0].text);
+    //   //   } catch (error) {
+    //   //     console.error('Could not JSON parse stream message', message, error);
+    //   //   }
+    //   // }
+    // });
+
+    // console.log(completion.data);
 
     completion.data.pipe(res);
 
-    // res.send({ message: completion.data.choices[0].message });
+    // res.send('completion.data');
   } catch (error) {
+    // console.log(error);
     // Consider adjusting the error handling logic for your use case
-    if (error.response) {
-      console.error(error.response.status, error.response.data);
-      res.status(error.response.status).json(error.response.data);
-    } else {
-      console.error(`Error with OpenAI API request: ${error.message}`);
-      res.status(500).json({
-        error: {
-          message: 'An error occurred during your request.',
-        }
-      });
-    }
+    // if (error.response) {
+    //   console.error(error.response.status, error.response.data);
+    //   res.status(error.response.status).json(error.response.data);
+    // } else {
+    //   console.error(`Error with OpenAI API request: ${error.message}`);
+    //   res.status(500).json({
+    //     error: {
+    //       message: 'An error occurred during your request.',
+    //     }
+    //   });
+    // }
   }
 });
-
-function generatePrompt(animal) {
-  const capitalizedAnimal =
-    animal[0].toUpperCase() + animal.slice(1).toLowerCase();
-  return `Suggest three names for an animal that is a superhero.
-
-    Animal: Cat
-    Names: Captain Sharpclaw, Agent Fluffball, The Incredible Feline
-    Animal: Dog
-    Names: Ruff the Protector, Wonder Canine, Sir Barks-a-Lot
-    Animal: ${capitalizedAnimal}
-    Names:`
-    ;
-}
-
-
 
 module.exports = router;
