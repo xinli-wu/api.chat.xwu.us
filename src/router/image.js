@@ -18,8 +18,6 @@ router.use(async (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const collection = db.collection('chats');
 
-  console.log(originalUrl);
-
   try {
 
     await collection.insertOne({
