@@ -1,11 +1,14 @@
 const { config } = require('dotenv');
 config();
-
-const express = require('express');
-const openai = require('./router/openai');
-const cors = require('cors');
 const conn = require('./db/conn');
 conn();
+
+const express = require('express');
+const cors = require('cors');
+
+const chat = require('./router/chat');
+const image = require('./router/image');
+
 const app = express();
 const port = 4000;
 
@@ -17,9 +20,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
-// app.use(express.urlencoded());
 
-app.use('/openai', openai);
+app.use('/openai/chat', chat);
+app.use('/openai/image', image);
 
 app.listen(port, () => {
   console.log(`API listening on port ${port}`);

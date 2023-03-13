@@ -14,13 +14,16 @@ const openai = new OpenAIApi(configuration);
 // middleware that is specific to this router
 router.use(async (req, res, next) => {
   const { messages } = req.body;
-  const { rawHeaders } = req;
+  const { rawHeaders, originalUrl } = req;
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const collection = db.collection('chats');
 
   try {
 
-    await collection.insertOne({ ...messages[messages.length - 1], metadata: { ts: dayjs().toISOString(), ip, rawHeaders } });
+    await collection.insertOne({
+      ...messages[messages.length - 1],
+      metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
+    });
 
   } finally {
 
@@ -29,7 +32,7 @@ router.use(async (req, res, next) => {
 
 });
 
-router.post('/chat/completion', async (req, res) => {
+router.post('/completion', async (req, res) => {
   const { messages } = req.body;
   try {
 
