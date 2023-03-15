@@ -22,7 +22,8 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/openai/chat', chat);
-app.use('/openai/image', image);
+//  disable image creation, too expensive :(
+// app.use('/openai/image', image);
 
 app.listen(port, () => {
   console.log(`API listening on port ${port}`);
