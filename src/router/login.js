@@ -19,8 +19,8 @@ const genHash = async (obj) => {
 };
 
 const sendOTP = async ({ origin, email, otp }) => {
-  // const link = `${req.protocol}://${req.get('host')}/email-login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
-  const link = `${origin}/email-login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
+  // const link = `${req.protocol}://${req.get('host')}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
+  const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
   console.log(link);
   await simpleEmail({ to: email, subject: 'Your OTP link', text: link });
 };
@@ -51,8 +51,6 @@ router.post('/', async (req, res) => {
       const otp = await genHash(JSON.stringify({ email, ts: dayjs() }));
       const user = await User.create({ email, otp });
       await user.save();
-      const link = `${origin}/email-login?email=${encodeURIComponent(user.email)}&otp=${encodeURIComponent(user.otp)}`;
-      console.log(link);
       await sendOTP({ origin, email, otp });
       res.send({ status: 'success', message: 'Please click on the link sent to your email.' });
     } else {
