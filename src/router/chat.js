@@ -3,6 +3,8 @@ const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const { Configuration, OpenAIApi } = require('openai');
+const auth = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 
 const db = mongoose.connection;
 
@@ -13,26 +15,32 @@ const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
 router.use(async (req, res, next) => {
-  const { messages } = req.body;
-  const { rawHeaders, originalUrl } = req;
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const collection = db.collection('chats');
+  const token = req.headers['authorization']?.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  try {
+  if (process.env.NODE_ENV === 'production') {
+    const { messages } = req.body;
+    const { rawHeaders, originalUrl } = req;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const collection = db.collection('chats');
 
-    await collection.insertOne({
-      ...messages[messages.length - 1],
-      metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
-    });
+    try {
+      await collection.insertOne({
+        ...messages[messages.length - 1],
+        user: decoded,
+        metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
+      });
 
-  } finally {
-
-    next();
+    } catch (err) {
+      console.error(err);
+    }
   }
+
+  next();
 
 });
 
-router.post('/completion', async (req, res) => {
+router.post('/completion', auth, async (req, res) => {
   const { messages } = req.body;
   try {
 
