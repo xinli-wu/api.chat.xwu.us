@@ -15,7 +15,7 @@ router.get('/', auth, async (req, res) => {
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
   if (typeof decoded !== 'string' && decoded?.email) {
-    const user = await User.findOne({ email: decoded.email });
+    const user = await User.findOne({ email: decoded.email }, { _id: 0, __v: 0 });
     res.status(200).send({
       status: 'success',
       message: 'You are logged in, welcome 🙌',
