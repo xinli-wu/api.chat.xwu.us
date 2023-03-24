@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.0",
     "mime": "^3.0.0",
     "mongoose": "^7.0.3",
+    "nodemailer": "^6.9.1",
     "openai": "^3.2.1"
   },
   "devDependencies": {

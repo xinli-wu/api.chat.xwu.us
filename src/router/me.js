@@ -13,9 +13,9 @@ router.use(async (req, res, next) => {
 router.get('/', auth, async (req, res) => {
   const token = req.headers['authorization'].split(' ')[1];
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  console.log(decoded);
+
   if (typeof decoded !== 'string' && decoded?.email) {
-    const user = await User.findOne({ email: decoded.email }, { email: 1, _id: 0 });
+    const user = await User.findOne({ email: decoded.email });
     res.status(200).send({
       status: 'success',
       message: 'You are logged in, welcome 🙌',
