@@ -9,23 +9,27 @@ const simpleEmail = async ({ to, subject, text, html = undefined }) => {
 
   const transporter = nodemailer.createTransport({
     host: EMAIL_HOST,
-    port: 465,
-    secure: true, // true for 465, false for other ports
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASS,
     },
   });
 
-  const info = await transporter.sendMail({
-    from: '"uChat" <chat.noreply@xwu.us>',
-    to,
-    subject,
-    text,
-    html
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: '"uChat" <noreply@chat.xwu.us>',
+      to,
+      subject,
+      text,
+      html
+    });
 
-  console.log("Message sent: %s", info.messageId);
+    console.log("Message sent: %s", info.messageId);
+  } catch (error) {
+    console.log('e', error);
+  }
 
 };
 
