@@ -3,6 +3,7 @@ const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const { Configuration, OpenAIApi } = require('openai');
+const auth = require('../middleware/auth');
 
 const db = mongoose.connection;
 
@@ -13,26 +14,29 @@ const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
 router.use(async (req, res, next) => {
-  const { messages } = req.body;
-  const { rawHeaders, originalUrl } = req;
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const collection = db.collection('chats');
+  if (process.env.NODE_ENV === 'production') {
+    const { messages } = req.body;
+    const { rawHeaders, originalUrl } = req;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const collection = db.collection('chats');
 
-  try {
+    try {
 
-    await collection.insertOne({
-      ...messages[messages.length - 1],
-      metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
-    });
+      await collection.insertOne({
+        ...messages[messages.length - 1],
+        metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
+      });
 
-  } finally {
-
-    next();
+    } catch (err) {
+      console.error(err);
+    }
   }
+
+  next();
 
 });
 
-router.post('/completion', async (req, res) => {
+router.post('/completion', auth, async (req, res) => {
   const { messages } = req.body;
   try {
 

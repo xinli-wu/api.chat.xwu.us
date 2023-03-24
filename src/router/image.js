@@ -3,6 +3,7 @@ const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const { Configuration, OpenAIApi } = require('openai');
+const auth = require('../middleware/auth');
 
 const db = mongoose.connection;
 
@@ -13,33 +14,36 @@ const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
 router.use(async (req, res, next) => {
-  const { prompt } = req.body;
-  const { rawHeaders, originalUrl } = req;
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const collection = db.collection('chats');
+  if (process.env.NODE_ENV === 'production') {
+    const { prompt } = req.body;
+    const { rawHeaders, originalUrl } = req;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const collection = db.collection('chats');
 
-  try {
+    try {
 
-    await collection.insertOne({
-      prompt,
-      metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
-    });
+      await collection.insertOne({
+        prompt,
+        metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
+      });
 
-  } finally {
-
-    next();
+    } catch (err) {
+      console.error(err);
+    }
   }
+
+  next();
 
 });
 
-router.post('/create', async (req, res) => {
+router.post('/create', auth, async (req, res) => {
   const { prompt } = req.body;
   try {
 
     const response = await openai.createImage({
       prompt: prompt,
       n: 4,
-      size: '512x512',
+      size: '256x256',
       response_format: 'b64_json'
     });
 
