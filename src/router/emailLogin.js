@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
       const link = `${origin}/email-login?email=${encodeURIComponent(user.email)}&otp=${encodeURIComponent(user.otp)}`;
       console.log(link);
       await sendOTP({ origin, email, otp });
-      res.send({ message: 'Please click on the link sent to your email.' });
+      res.send({ status: 'success', message: 'Please click on the link sent to your email.' });
     } else {
 
       if (otp) {
@@ -76,7 +76,7 @@ router.post('/', async (req, res) => {
         await user.updateOne({ otp });
         await user.save();
         await sendOTP({ origin, email, otp });
-        res.send({ message: 'Please click on the link sent to your email.' });
+        res.send({ status: 'success', message: 'Please click on the link sent to your email.' });
       }
 
     }
