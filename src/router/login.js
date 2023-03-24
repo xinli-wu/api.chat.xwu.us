@@ -30,15 +30,17 @@ router.use(async (req, res, next) => { next(); });
 
 router.post('/', async (req, res) => {
   let { email } = req.body;
+
+  if (!email) {
+    res.send({ status: 'error', message: 'Wrong params' });
+    return;
+  };
+
   email = email.toLowerCase();
 
   const { otp } = req.body;
   const origin = req.get('origin');
 
-  if (!email) {
-    res.send({ message: 'Wrong params' });
-    return;
-  };
 
   try {
 
@@ -56,7 +58,7 @@ router.post('/', async (req, res) => {
     } else {
 
       if (otp) {
-        if (otp !== user.otp) res.status(401).send({ message: 'Wrong OTP' });
+        if (otp !== user.otp) res.status(401).send({ status: 'error', message: 'Wrong OTP' });
         if (user.otp === otp) {
           // Correct OTP, del OTP in db and issue token
           await user.updateOne({ $unset: { otp: 1 } });
