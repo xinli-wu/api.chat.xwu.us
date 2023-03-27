@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const { simpleEmail } = require('../utils/email');
+const disposableEmailBlocker = require('../middleware/disposableEmailBlocker');
 
 const saltRounds = 10;
 
@@ -30,7 +31,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // middleware that is specific to this router
 router.use(async (req, res, next) => { next(); });
 
-router.post('/', async (req, res) => {
+router.post('/', disposableEmailBlocker, async (req, res) => {
   let { email } = req.body;
 
   if (!email || !emailRegex.test(email)) {
