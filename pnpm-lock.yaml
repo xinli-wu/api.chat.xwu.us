@@ -14,6 +14,7 @@ specifiers:
   nodemailer: ^6.9.1
   nodemon: ^2.0.22
   openai: ^3.2.1
+  stripe: ^11.16.0
 
 dependencies:
   bcrypt: 5.1.0
@@ -27,6 +28,7 @@ dependencies:
   mongoose: 7.0.3
   nodemailer: 6.9.1
   openai: 3.2.1
+  stripe: 11.16.0
 
 devDependencies:
   esbuild: 0.17.12
@@ -1390,6 +1392,14 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       ansi-regex: 5.0.1
+    dev: false
+
+  /stripe/11.16.0:
+    resolution: {integrity: sha512-Ej1ZtbrMw+Z7L8Kxj80sDNF0E/lPypY2nwymU/wGcOjn7CppTa2HXxPTsQRQ8U0MSVRcwRWyGMrizQWuaUqVGw==}
+    engines: {node: '>=12.*'}
+    dependencies:
+      '@types/node': 18.15.7
+      qs: 6.11.0
     dev: false
 
   /supports-color/5.5.0:

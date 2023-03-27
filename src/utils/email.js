@@ -27,8 +27,9 @@ const simpleEmail = async ({ to, subject, text, html = undefined }) => {
     });
 
     console.log("Message sent: %s", info.messageId);
+    return Promise.resolve(info);
   } catch (error) {
-    console.log('e', error);
+    return Promise.reject(error);
   }
 
 };

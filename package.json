@@ -21,7 +21,8 @@
     "mime": "^3.0.0",
     "mongoose": "^7.0.3",
     "nodemailer": "^6.9.1",
-    "openai": "^3.2.1"
+    "openai": "^3.2.1",
+    "stripe": "^11.16.0"
   },
   "devDependencies": {
     "esbuild": "^0.17.12",

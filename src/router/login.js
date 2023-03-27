@@ -21,9 +21,11 @@ const genHash = async (obj) => {
 const sendOTP = async ({ origin, email, otp }) => {
   // const link = `${req.protocol}://${req.get('host')}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
   const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
-  console.log(link);
-  await simpleEmail({ to: email, subject: 'Your OTP link', text: link });
+
+  return simpleEmail({ to: email, subject: 'Your OTP link', text: link });
 };
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // middleware that is specific to this router
 router.use(async (req, res, next) => { next(); });
@@ -31,8 +33,8 @@ router.use(async (req, res, next) => { next(); });
 router.post('/', async (req, res) => {
   let { email } = req.body;
 
-  if (!email) {
-    res.send({ status: 'error', message: 'Wrong params' });
+  if (!email || !emailRegex.test(email)) {
+    res.status(403).send({ status: 'error', message: 'Wrong params' });
     return;
   };
 
@@ -78,7 +80,6 @@ router.post('/', async (req, res) => {
         await sendOTP({ origin, email, otp });
         res.send({ status: 'success', message: 'Please click on the link sent to your email.' });
       }
-
     }
 
   } catch (error) {
