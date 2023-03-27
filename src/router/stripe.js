@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 
 
-const YOUR_DOMAIN = 'http://localhost:3000';
+const YOUR_DOMAIN = `//${process.env.WEB_UI}:3000`;
 
 router.post('/create-checkout-session', async (req, res) => {
 
