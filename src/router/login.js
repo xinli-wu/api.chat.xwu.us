@@ -23,7 +23,18 @@ const sendOTP = async ({ origin, email, otp }) => {
   // const link = `${req.protocol}://${req.get('host')}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
   const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
 
-  return simpleEmail({ to: email, subject: 'Your OTP link', text: link });
+  return simpleEmail({
+    to: email,
+    subject: '[uChat] Your OTP link',
+    text: '',
+    html: `
+    Hi ${email},
+    <br>
+    <p>Please click on the following link to verify your email address:</p>
+    
+    <p><a href="${link}">${link}</a></p>
+    `,
+  });
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
