@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const User = require('../model/user');
+const { genAccessToken } = require('../utils/token');
 const jwt = require('jsonwebtoken');
+const User = require('../model/user');
 
 router.use(async (req, res, next) => {
 
@@ -11,11 +12,9 @@ router.use(async (req, res, next) => {
 });
 
 router.get('/', auth, async (req, res) => {
-  const token = req.headers['authorization'].split(' ')[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user = req['user'];
 
-  if (typeof decoded !== 'string' && decoded?.email) {
-    const user = await User.findOne({ email: decoded.email }, { _id: 0, __v: 0 });
+  if (user) {
     res.status(200).send({
       status: 'success',
       message: 'You are logged in, welcome 🙌',
@@ -30,5 +29,47 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+
+
+router.post('/refresh', async (req, res) => {
+
+  if (req.cookies?.jwt) {
+
+    const refreshToken = req.cookies.jwt;
+
+    // Verifying refresh token
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET, async (err, decoded) => {
+      if (err) {
+        // Wrong Refesh Token
+        return res.status(406).json({ status: 'error', message: 'Unauthorized' });
+      } else {
+        // Correct token we send a new access token
+        const user = await User.findOne({ email: decoded.email });
+
+        const token = genAccessToken({ email: user.email }, {});
+        if (user.token !== token) user.token = token;
+        await user.save();
+
+        return res.send({
+          status: 'success',
+          message: 'You are logged in, welcome 🙌',
+          data: { user }
+        });
+      }
+    });
+  } else {
+    return res.status(406).json({ status: 'error', message: 'Unauthorized' });
+  }
+
+});
+
+router.post('/logout', async (req, res) => {
+  res.cookie('jwt', 'none', {
+    expires: new Date(Date.now() + 5 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ status: 'success', message: 'User logged out successfully' });
+});
 
 module.exports = router;

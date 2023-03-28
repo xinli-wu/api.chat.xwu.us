@@ -5,6 +5,7 @@ conn();
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const chat = require('./router/chat');
 const image = require('./router/image');
@@ -16,13 +17,16 @@ const app = express();
 const port = 4000;
 
 app.use(cors({
+  // origin: '*'
   origin: [
     ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : [])
     , 'https://chat.xwu.us'
-  ]
+  ],
+  credentials: true
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/openai/chat', chat);
 //  disable image creation, too expensive :(

@@ -4,7 +4,6 @@ const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const { Configuration, OpenAIApi } = require('openai');
 const auth = require('../middleware/auth');
-const jwt = require('jsonwebtoken');
 
 const db = mongoose.connection;
 
@@ -14,9 +13,8 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
-router.use(async (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+router.use(auth, async (req, res, next) => {
+  const user = [req['user']];
 
   if (process.env.NODE_ENV === 'production') {
     const { messages } = req.body;
@@ -27,7 +25,7 @@ router.use(async (req, res, next) => {
     try {
       await collection.insertOne({
         ...messages[messages.length - 1],
-        user: decoded,
+        user: user,
         metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
       });
 
@@ -40,7 +38,7 @@ router.use(async (req, res, next) => {
 
 });
 
-router.post('/completion', auth, async (req, res) => {
+router.post('/completion', async (req, res) => {
   const { messages } = req.body;
   try {
 

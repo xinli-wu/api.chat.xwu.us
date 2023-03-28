@@ -2,17 +2,12 @@ const express = require('express');
 const router = express.Router();
 const dayjs = require('dayjs');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const { simpleEmail } = require('../utils/email');
 const disposableEmailBlocker = require('../middleware/disposableEmailBlocker');
+const { genAccessToken, genRefershToken } = require('../utils/token');
 
 const saltRounds = 10;
-
-const genAccessToken = (obj, { expiresIn }) => {
-  const token = jwt.sign(obj, process.env.JWT_SECRET, { expiresIn });
-  return token;
-};
 
 const genHash = async (obj) => {
   const hash = await bcrypt.hash(obj, saltRounds);
@@ -40,9 +35,7 @@ const sendOTP = async ({ origin, email, otp }) => {
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // middleware that is specific to this router
-router.use(async (req, res, next) => { next(); });
-
-router.post('/', disposableEmailBlocker, async (req, res) => {
+router.use(async (req, res, next) => {
   let { email } = req.body;
 
   if (!email || !emailRegex.test(email)) {
@@ -51,6 +44,18 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   };
 
   email = email.toLowerCase();
+  const user = await User.findOne({ email });
+
+  req['email'] = email;
+  req['user'] = user;
+
+  next();
+});
+
+router.post('/', disposableEmailBlocker, async (req, res) => {
+
+  const email = req['email'];
+  const user = req['user'];
 
   const { otp } = req.body;
   const origin = req.get('origin');
@@ -58,26 +63,36 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
 
   try {
 
-    const user = await User.findOne({ email });
 
     if (!user) {
       // first time user, add to db and send opt
-      const otp = await genHash(JSON.stringify({ email, ts: dayjs() }));
+      const otp = await genHash(JSON.stringify({ email: email, ts: dayjs() }));
       const user = await User.create({ email, otp });
       await user.save();
       await sendOTP({ origin, email, otp });
       res.send({ status: 'success', message: 'Please click on the link sent to your email.' });
     } else {
 
+      const { email } = user;
+
       if (otp) {
-        if (otp !== user.otp) res.status(401).send({ status: 'error', message: 'Wrong OTP' });
+        if (otp !== user.otp) res.status(406).send({ status: 'error', message: 'Wrong OTP, please request a new one.' });
         if (user.otp === otp) {
           // Correct OTP, del OTP in db and issue token
           await user.updateOne({ $unset: { otp: 1 } });
           // const user = await User.findOne({ email });
-          const token = genAccessToken({ email: user.email }, { expiresIn: '1h' });
+          const token = genAccessToken({ email }, {});
           if (user.token !== token) user.token = token;
           await user.save();
+
+          const refreshToken = genRefershToken({ email }, {});
+
+          res.cookie('jwt', refreshToken, {
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000
+          });
 
           res.send({
             status: 'success',
@@ -98,5 +113,7 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
     console.error(error);
   }
 });
+
+
 
 module.exports = router;

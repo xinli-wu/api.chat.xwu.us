@@ -15,6 +15,8 @@ const disposableEmailBlocker = async (req, res, next) => {
     return res.status(403).send({ status: 'error', message: `We can't send email to the email address provided.` });
   }
 
+  req['email'] = email;
+
   return next();
 };
 
