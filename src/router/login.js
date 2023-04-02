@@ -64,7 +64,7 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
 
     if (!user) {
       // first time user, add to db and send opt
-      const otp = await genHash(JSON.stringify({ email, ts: dayjs() }));
+      const otp = await genHash(JSON.stringify({ email, ts: dayjs().toISOString() }));
       const user = await User.create({ email, otp });
       await user.save();
       await sendOTP({ origin, email, otp });
@@ -98,7 +98,7 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
           });
         }
       } else {
-        const otp = await genHash(JSON.stringify({ email, ts: dayjs() }));
+        const otp = await genHash(JSON.stringify({ email, ts: dayjs().toISOString() }));
         await user.updateOne({ otp });
         await user.save();
         await sendOTP({ origin, email, otp });

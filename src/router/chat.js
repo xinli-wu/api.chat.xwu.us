@@ -2,15 +2,11 @@ const express = require('express');
 const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
-const { Configuration, OpenAIApi } = require('openai');
 const auth = require('../middleware/auth');
 
 const db = mongoose.connection;
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
+const openai = require('../openai/chatCompletion');
 
 // middleware that is specific to this router
 router.use(auth, async (req, res, next) => {
@@ -42,13 +38,7 @@ router.post('/completion', async (req, res) => {
   const { messages } = req.body;
   try {
 
-    const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: messages,
-      temperature: 0.6,
-      max_tokens: 1000,
-      stream: true
-    }, { responseType: 'stream' });
+    const completion = await openai.createChatCompletion(messages, { stream: true });
 
     // console.log('==============================================================================');
     // console.log('completion.ok', completion.ok);
