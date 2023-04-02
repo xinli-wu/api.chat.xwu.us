@@ -30,7 +30,6 @@ router.get('/', auth, async (req, res) => {
 });
 
 
-
 router.post('/refresh', async (req, res) => {
 
   if (req.cookies?.jwt) {

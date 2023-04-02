@@ -14,7 +14,7 @@ const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
 router.use(auth, async (req, res, next) => {
-  const user = [req['user']];
+  const user = req['user'];
 
   if (process.env.NODE_ENV === 'production') {
     const { messages } = req.body;

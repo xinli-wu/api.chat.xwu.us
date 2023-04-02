@@ -11,6 +11,7 @@ const chat = require('./router/chat');
 const image = require('./router/image');
 const login = require('./router/login');
 const me = require('./router/me');
+const my = require('./router/my');
 const stripe = require('./router/stripe');
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/openai/chat', chat);
 // app.use('/openai/image', image);
 app.use('/login', login);
 app.use('/me', me);
+app.use('/my', my);
 app.use('/stripe', stripe);
 
 app.listen(port, () => {

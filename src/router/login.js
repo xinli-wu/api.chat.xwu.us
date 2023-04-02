@@ -60,13 +60,11 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   const { otp } = req.body;
   const origin = req.get('origin');
 
-
   try {
-
 
     if (!user) {
       // first time user, add to db and send opt
-      const otp = await genHash(JSON.stringify({ email: email, ts: dayjs() }));
+      const otp = await genHash(JSON.stringify({ email, ts: dayjs() }));
       const user = await User.create({ email, otp });
       await user.save();
       await sendOTP({ origin, email, otp });
@@ -80,7 +78,6 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
         if (user.otp === otp) {
           // Correct OTP, del OTP in db and issue token
           await user.updateOne({ $unset: { otp: 1 } });
-          // const user = await User.findOne({ email });
           const token = genAccessToken({ email }, {});
           if (user.token !== token) user.token = token;
           await user.save();
