@@ -13,18 +13,31 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
-router.use(async (req, res, next) => {
-  if (process.env.NODE_ENV === 'production') {
+router.use(auth, async (req, res, next) => {
+  const user = req['user'];
+  const collection = db.collection('images');
+
+  const now = dayjs();
+
+  const lastImage = await collection.find({ 'user._id': user._id, 'metadata.c': { $gte: now.subtract(1, 'days').toISOString() } }).sort('metadata.c', -1).toArray();
+
+  if (lastImage.length > 0) {
+    res.send({ status: 'error', message: 'You have created an image in the last 24 hours, please try again later.' });
+    return;
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
     const { prompt } = req.body;
     const { rawHeaders, originalUrl } = req;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const collection = db.collection('chats');
+
 
     try {
 
       await collection.insertOne({
         prompt,
-        metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
+        user: user,
+        metadata: { c: now, originalUrl, ip, rawHeaders }
       });
 
     } catch (err) {
@@ -42,7 +55,7 @@ router.post('/create', auth, async (req, res) => {
 
     const response = await openai.createImage({
       prompt: prompt,
-      n: 4,
+      n: 1,
       size: '256x256',
       response_format: 'b64_json'
     });

@@ -31,7 +31,7 @@ app.use(cookieParser());
 
 app.use('/openai/chat', chat);
 //  disable image creation, too expensive :(
-// app.use('/openai/image', image);
+app.use('/openai/image', image);
 app.use('/login', login);
 app.use('/me', me);
 app.use('/my', my);
