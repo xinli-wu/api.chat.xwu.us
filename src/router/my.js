@@ -15,7 +15,7 @@ router.use(auth, async (req, res, next) => {
 
 });
 
-router.post('/conversation/add', async (req, res) => {
+router.post('/chat/add', async (req, res) => {
   const collection = db.collection('conversations');
   const user = req['user'];
   const now = dayjs().toISOString();
@@ -40,7 +40,7 @@ router.post('/conversation/add', async (req, res) => {
   }
 });
 
-router.get('/conversation/get/:_id', async (req, res) => {
+router.get('/chat/:_id', async (req, res) => {
   const collection = db.collection('conversations');
   const user = req['user'];
   const { _id } = req.params;
@@ -57,7 +57,7 @@ router.get('/conversation/get/:_id', async (req, res) => {
   }
 });
 
-router.get('/conversation-hitory', async (req, res) => {
+router.get('/chat', async (req, res) => {
   const collection = db.collection('conversations');
   const user = req['user'];
 
