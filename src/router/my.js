@@ -24,8 +24,7 @@ router.post('/conversation/add', async (req, res) => {
   const titlePrompt = chats.filter(x => x.message?.role === 'user').map(x => x.message?.content);
   try {
     const completion = await openai.createCompletion(`give a title for this: ${JSON.stringify(titlePrompt)}`, {});
-    console.log('completion.data', completion.data);
-    const title = completion.data.choices[0]?.text?.replaceAll('\n', '') || dayjs().toISOString();
+    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || dayjs().toISOString();
 
     if (completion.data.choices[0].text.length > 0) {
       await collection.insertOne({
