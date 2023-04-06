@@ -15,13 +15,13 @@ const openai = new OpenAIApi(configuration);
 // middleware that is specific to this router
 router.use(auth, async (req, res, next) => {
   const user = req['user'];
-  const collection = db.collection('images');
+  const collection = db.collection('create-image-log');
 
   const now = dayjs();
 
   const lastImage = await collection.find({ 'user._id': user._id, 'metadata.c': { $gte: now.subtract(1, 'days').toISOString() } }).sort('metadata.c', -1).toArray();
 
-  if (lastImage.length > 0) {
+  if (lastImage.length) {
     res.send({ status: 'error', message: 'You have created an image in the last 24 hours, please try again later.' });
     return;
   }
@@ -31,13 +31,12 @@ router.use(auth, async (req, res, next) => {
     const { rawHeaders, originalUrl } = req;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-
     try {
 
       await collection.insertOne({
         prompt,
         user: user,
-        metadata: { c: now, originalUrl, ip, rawHeaders }
+        metadata: { c: now.toISOString(), originalUrl, ip, rawHeaders }
       });
 
     } catch (err) {
@@ -60,7 +59,7 @@ router.post('/create', auth, async (req, res) => {
       response_format: 'b64_json'
     });
 
-    res.send(response.data);
+    res.send({ status: 'success', data: response.data.data });
   } catch (error) {
     console.log(error);
     // Consider adjusting the error handling logic for your use case

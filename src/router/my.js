@@ -10,35 +10,9 @@ const db = mongoose.connection;
 
 // middleware that is specific to this router
 router.use(auth, async (req, res, next) => {
-
   next();
-
 });
 
-router.post('/chat/add', async (req, res) => {
-  const collection = db.collection('conversations');
-  const user = req['user'];
-  const now = dayjs().toISOString();
-  const { chats } = req.body;
-
-  const titlePrompt = chats.filter(x => x.message?.role === 'user').map(x => x.message?.content);
-  try {
-    const completion = await openai.createCompletion(`give a title for this: ${JSON.stringify(titlePrompt)}`, {});
-    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || dayjs().toISOString();
-
-    if (completion.data.choices[0].text.length > 0) {
-      await collection.insertOne({
-        metadata: { c: now },
-        user: user,
-        data: { title, chats }
-      });
-    }
-
-    res.send({ status: 'success', data: { title } });
-  } catch (error) {
-    res.send({ status: 'error', message: error.message });
-  }
-});
 
 router.get('/chat/:_id', async (req, res) => {
   const collection = db.collection('conversations');
@@ -70,6 +44,87 @@ router.get('/chat', async (req, res) => {
       .toArray();
 
     res.send({ status: 'success', data: data });
+  } catch (error) {
+    res.send({ status: 'error', message: error.message });
+  }
+});
+
+router.post('/chat/add', async (req, res) => {
+  const collection = db.collection('conversations');
+  const user = req['user'];
+  const now = dayjs().toISOString();
+  const { chats } = req.body;
+
+  const titlePrompt = chats.filter(x => x.message?.role === 'user').map(x => x.message?.content);
+  try {
+    const completion = await openai.createCompletion(`give a title for this: ${JSON.stringify(titlePrompt)}`, {});
+    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || dayjs().toISOString();
+
+    if (completion.data.choices[0].text.length > 0) {
+      await collection.insertOne({
+        metadata: { c: now },
+        user: user,
+        data: { title, chats }
+      });
+    }
+
+    res.send({ status: 'success', data: { title } });
+  } catch (error) {
+    res.send({ status: 'error', message: error.message });
+  }
+});
+
+router.get('/image/:_id', async (req, res) => {
+  const collection = db.collection('images');
+  const user = req['user'];
+  const { _id } = req.params;
+
+  try {
+    const data = await collection.findOne({
+      'user._id': user._id,
+      _id: new mongoose.Types.ObjectId(_id)
+    }, { projection: { data: 1, metadata: 1 } });
+
+    res.send({ status: 'success', data: data });
+  } catch (error) {
+    res.send({ status: 'error', message: error.message });
+  }
+});
+
+router.get('/image', async (req, res) => {
+  const collection = db.collection('images');
+  const user = req['user'];
+
+  try {
+    const data = await collection.find(
+      { 'user._id': user._id },
+      { projection: { data: { title: 1 }, metadata: 1 } }
+    )
+      .sort({ 'metadata.c': -1 })
+      .toArray();
+
+    res.send({ status: 'success', data: data });
+  } catch (error) {
+    res.send({ status: 'error', message: error.message });
+  }
+});
+
+router.post('/image/add', async (req, res) => {
+  const collection = db.collection('images');
+  const user = req['user'];
+  const now = dayjs().toISOString();
+  const { chats } = req.body;
+
+  try {
+    const title = chats[0]?.message?.content || dayjs().toISOString();
+
+    await collection.insertOne({
+      metadata: { c: now },
+      user: user,
+      data: { title, chats }
+    });
+
+    res.send({ status: 'success', data: { title } });
   } catch (error) {
     res.send({ status: 'error', message: error.message });
   }
