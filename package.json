@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "dayjs": "^1.11.7",
     "dotenv": "^16.0.3",
+    "esbuild": "^0.17.15",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mime": "^3.0.0",
@@ -26,7 +27,6 @@
     "stripe": "^12.0.0"
   },
   "devDependencies": {
-    "esbuild": "^0.17.15",
     "nodemon": "^2.0.22"
   }
 }
