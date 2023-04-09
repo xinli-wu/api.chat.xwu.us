@@ -18,7 +18,6 @@ const app = express();
 const port = 4000;
 
 app.use(cors({
-  // origin: '*'
   origin: [
     ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : [])
     , 'https://chat.xwu.us'
