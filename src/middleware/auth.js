@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
+const Subscription = require('../model/subscription');
+const { plans, planConfig } = require('../router/stripe/plans');
 
 const config = process.env;
 
@@ -15,7 +17,12 @@ const auth = async (req, res, next) => {
 
     const email = decoded?.email;
     const user = await User.findOne({ email });
+    const subscription = await Subscription.findOne({ user });
+
     req.user = user;
+    req.subscription = subscription;
+    req.plan = planConfig.find(x => x.name === subscription?.subscription?.displayName) || planConfig[0];
+
   } catch (err) {
     return res.status(401).send({ status: 'error', message: 'Invalid Token' });
   }

@@ -8,26 +8,33 @@ const db = mongoose.connection;
 
 const openai = require('../openai/chatCompletion');
 
-// middleware that is specific to this router
 router.use(auth, async (req, res, next) => {
+  const collection = db.collection('chats');
+
   const user = req['user'];
+  const quota = req['plan'].feature[0].quota;
 
-  if (process.env.NODE_ENV === 'production') {
-    const { messages } = req.body;
-    const { rawHeaders, originalUrl } = req;
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const collection = db.collection('chats');
+  const used = await collection.countDocuments({
+    'user.email': user.email,
+    'metadata.ts': { $gte: dayjs().subtract(1, 'days').toISOString() }
+  });
 
-    try {
-      await collection.insertOne({
-        ...messages[messages.length - 1],
-        user: user,
-        metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
-      });
+  if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
 
-    } catch (err) {
-      console.error(err);
-    }
+  //logging
+  const { messages } = req.body;
+  const { rawHeaders, originalUrl } = req;
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+  try {
+    await collection.insertOne({
+      ...messages[messages.length - 1],
+      user: user,
+      metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
+    });
+
+  } catch (err) {
+    console.error(err);
   }
 
   next();
@@ -36,6 +43,7 @@ router.use(auth, async (req, res, next) => {
 
 router.post('/completion', async (req, res) => {
   const { messages } = req.body;
+
   try {
 
     const completion = await openai.createChatCompletion(messages, { stream: true });

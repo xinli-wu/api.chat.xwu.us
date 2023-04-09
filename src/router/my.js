@@ -4,7 +4,6 @@ const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const openai = require('../openai/chatCompletion');
-const { ObjectId } = require('mongoose/lib');
 
 const db = mongoose.connection;
 
@@ -50,10 +49,16 @@ router.get('/chat', async (req, res) => {
 });
 
 router.post('/chat/add', async (req, res) => {
+  const { chats } = req.body;
   const collection = db.collection('conversations');
   const user = req['user'];
+  const quota = req['plan'].feature[2].quota;
+
+  const used = await collection.countDocuments({ 'user._id': user._id });
+
+  if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
+
   const now = dayjs().toISOString();
-  const { chats } = req.body;
 
   const titlePrompt = chats.filter(x => x.message?.role === 'user').map(x => x.message?.content);
   try {
@@ -114,6 +119,14 @@ router.post('/image/add', async (req, res) => {
   const user = req['user'];
   const now = dayjs().toISOString();
   const { chats } = req.body;
+
+  const quota = req['plan'].feature[2].quota;
+
+  const used = await collection.countDocuments({ 'user._id': user._id });
+
+  console.log(used, quota);
+
+  if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
 
   try {
     const title = chats[0]?.message?.content || dayjs().toISOString();

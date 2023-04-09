@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const { genAccessToken } = require('../utils/token');
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
+const Subscription = require('../model/subscription');
 
 router.use(async (req, res, next) => {
 
@@ -32,6 +33,8 @@ router.get('/', auth, async (req, res) => {
 
 router.post('/refresh', async (req, res) => {
 
+  const user = req['user'];
+
   if (req.cookies?.jwt) {
 
     const refreshToken = req.cookies.jwt;
@@ -44,15 +47,19 @@ router.post('/refresh', async (req, res) => {
       } else {
         // Correct token we send a new access token
         const user = await User.findOne({ email: decoded.email });
+        const subscription = await Subscription.findOne({ user });
 
         const token = genAccessToken({ email: user.email }, {});
         if (user.token !== token) user.token = token;
         await user.save();
 
+        delete subscription?.subscription?.session;
         return res.send({
           status: 'success',
           message: 'You are logged in, welcome 🙌',
-          data: { user }
+          data: {
+            user: { ...user.toObject(), ...(subscription && { subscription: subscription?.subscription }) }
+          }
         });
       }
     });

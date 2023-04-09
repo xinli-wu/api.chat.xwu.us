@@ -12,7 +12,7 @@ const image = require('./router/image');
 const login = require('./router/login');
 const me = require('./router/me');
 const my = require('./router/my');
-const stripe = require('./router/stripe');
+const stripe = require('./router/stripe/stripe');
 
 const app = express();
 const port = 4000;

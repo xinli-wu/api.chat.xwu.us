@@ -14,34 +14,34 @@ const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
 router.use(auth, async (req, res, next) => {
-  const user = req['user'];
   const collection = db.collection('create-image-log');
-
+  const user = req['user'];
+  const quota = req['plan'].feature[1].quota;;
   const now = dayjs();
 
-  const lastImage = await collection.find({ 'user._id': user._id, 'metadata.c': { $gte: now.subtract(1, 'days').toISOString() } }).sort('metadata.c', -1).toArray();
+  const used = await collection.countDocuments({
+    'user._id': user._id,
+    'metadata.c': { $gte: now.subtract(1, 'days').toISOString() }
+  });
 
-  if (lastImage.length) {
-    res.send({ status: 'error', message: 'You have created an image in the last 24 hours, please try again later.' });
-    return;
-  }
+  if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
 
-  if (process.env.NODE_ENV !== 'production') {
-    const { prompt } = req.body;
-    const { rawHeaders, originalUrl } = req;
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-    try {
+  //logging
+  const { prompt } = req.body;
+  const { rawHeaders, originalUrl } = req;
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-      await collection.insertOne({
-        prompt,
-        user: user,
-        metadata: { c: now.toISOString(), originalUrl, ip, rawHeaders }
-      });
+  try {
 
-    } catch (err) {
-      console.error(err);
-    }
+    await collection.insertOne({
+      prompt,
+      user: user,
+      metadata: { c: now.toISOString(), originalUrl, ip, rawHeaders }
+    });
+
+  } catch (err) {
+    console.error(err);
   }
 
   next();
