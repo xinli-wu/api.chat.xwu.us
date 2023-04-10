@@ -7,16 +7,17 @@ const auth = require('../middleware/auth');
 const db = mongoose.connection;
 
 const openai = require('../openai/chatCompletion');
+const utils = require('../middleware/utils');
 
-router.use(auth, async (req, res, next) => {
+router.use([utils, auth], async (req, res, next) => {
   const collection = db.collection('chats');
-
+  const { now } = req['utils'];
   const user = req['user'];
   const quota = req['plan'].feature[0].quota;
 
   const used = await collection.countDocuments({
     'user.email': user.email,
-    'metadata.ts': { $gte: dayjs().subtract(1, 'days').toISOString() }
+    'metadata.c': { $gte: dayjs(now).subtract(1, 'days').toDate() }
   });
 
   if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
@@ -30,7 +31,7 @@ router.use(auth, async (req, res, next) => {
     await collection.insertOne({
       ...messages[messages.length - 1],
       user: user,
-      metadata: { ts: dayjs().toISOString(), originalUrl, ip, rawHeaders }
+      metadata: { c: now, originalUrl, ip, rawHeaders }
     });
 
   } catch (err) {

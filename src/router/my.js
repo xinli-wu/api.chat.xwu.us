@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const openai = require('../openai/chatCompletion');
+const utils = require('../middleware/utils');
 
 const db = mongoose.connection;
 
 // middleware that is specific to this router
-router.use(auth, async (req, res, next) => {
+router.use([utils, auth], async (req, res, next) => {
   next();
 });
 
@@ -53,17 +53,17 @@ router.post('/chat/add', async (req, res) => {
   const collection = db.collection('conversations');
   const user = req['user'];
   const quota = req['plan'].feature[2].quota;
+  const { now } = req['utils'];
+
 
   const used = await collection.countDocuments({ 'user._id': user._id });
 
   if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
 
-  const now = dayjs().toISOString();
-
   const titlePrompt = chats.filter(x => x.message?.role === 'user').map(x => x.message?.content);
   try {
     const completion = await openai.createCompletion(`give a title for this: ${JSON.stringify(titlePrompt)}`, {});
-    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || dayjs().toISOString();
+    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || now.toISOString();
 
     if (completion.data.choices[0].text.length > 0) {
       await collection.insertOne({
@@ -117,19 +117,17 @@ router.get('/image', async (req, res) => {
 router.post('/image/add', async (req, res) => {
   const collection = db.collection('images');
   const user = req['user'];
-  const now = dayjs().toISOString();
+  const { now } = req['utils'];
   const { chats } = req.body;
 
   const quota = req['plan'].feature[2].quota;
 
   const used = await collection.countDocuments({ 'user._id': user._id });
 
-  console.log(used, quota);
-
   if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
 
   try {
-    const title = chats[0]?.message?.content || dayjs().toISOString();
+    const title = chats[0]?.message?.content || now.toISOString();
 
     await collection.insertOne({
       metadata: { c: now },
@@ -150,9 +148,9 @@ router.get('/openai/chat/completion-hitory', async (req, res) => {
   try {
     const data = await collection.find(
       { 'user._id': user._id },
-      { projection: { content: 1, 'metadata.ts': 1, '_id': 0 } }
+      { projection: { content: 1, 'metadata.c': 1, '_id': 0 } }
     )
-      .sort({ 'metadata.ts': -1 })
+      .sort({ 'metadata.c': -1 })
       .toArray();
 
     res.send({ status: 'success', data: data });

@@ -1,13 +1,13 @@
 const jwt = require('jsonwebtoken');
 
+const { JWT_ACCESS_TOKEN_SECRET, JWT_REFRESH_TOKEN_SECRET } = process.env;
+
 const genAccessToken = (obj, { expiresIn = '10m' }) => {
-  const token = jwt.sign(obj, process.env.JWT_ACCESS_TOKEN_SECRET, { expiresIn });
-  return token;
+  return jwt.sign(obj, JWT_ACCESS_TOKEN_SECRET, { expiresIn });
 };
 
 const genRefershToken = (obj, { expiresIn = '1d' }) => {
-  const token = jwt.sign(obj, process.env.JWT_REFRESH_TOKEN_SECRET, { expiresIn });
-  return token;
+  return jwt.sign(obj, JWT_REFRESH_TOKEN_SECRET, { expiresIn });
 };
 
 module.exports = {

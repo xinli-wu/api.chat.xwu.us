@@ -4,6 +4,7 @@ const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const { Configuration, OpenAIApi } = require('openai');
 const auth = require('../middleware/auth');
+const utils = require('../middleware/utils');
 
 const db = mongoose.connection;
 
@@ -13,19 +14,18 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
-router.use(auth, async (req, res, next) => {
+router.use([utils, auth], async (req, res, next) => {
   const collection = db.collection('create-image-log');
   const user = req['user'];
-  const quota = req['plan'].feature[1].quota;;
-  const now = dayjs();
+  const quota = req['plan'].feature[1].quota;
+  const { now } = req['utils'];
 
   const used = await collection.countDocuments({
     'user._id': user._id,
-    'metadata.c': { $gte: now.subtract(1, 'days').toISOString() }
+    'metadata.c': { $gte: dayjs(now).subtract(1, 'days').toDate() }
   });
 
   if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
-
 
   //logging
   const { prompt } = req.body;
@@ -37,7 +37,7 @@ router.use(auth, async (req, res, next) => {
     await collection.insertOne({
       prompt,
       user: user,
-      metadata: { c: now.toISOString(), originalUrl, ip, rawHeaders }
+      metadata: { c: now, originalUrl, ip, rawHeaders }
     });
 
   } catch (err) {

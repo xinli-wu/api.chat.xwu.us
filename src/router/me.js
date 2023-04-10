@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const Subscription = require('../model/subscription');
 
+const { JWT_REFRESH_TOKEN_SECRET } = process.env;
+
 router.use(async (req, res, next) => {
 
   next();
@@ -32,40 +34,36 @@ router.get('/', auth, async (req, res) => {
 
 
 router.post('/refresh', async (req, res) => {
+  const { jwt: refreshToken } = req.cookies || {};
 
-  const user = req['user'];
+  if (!refreshToken) return res.status(406).json({ status: 'error', message: 'Unauthorized' });
 
-  if (req.cookies?.jwt) {
+  // Verifying refresh token
+  jwt.verify(refreshToken, JWT_REFRESH_TOKEN_SECRET, async (err, decoded) => {
+    if (err) {
+      // Wrong Refesh Token
+      return res.status(406).json({ status: 'error', message: 'Unauthorized' });
+    } else {
+      // Correct token we send a new access token
+      const user = await User.findOne({ email: decoded.email });
+      if (!user) return res.status(406).json({ status: 'error', message: 'Unauthorized' });
 
-    const refreshToken = req.cookies.jwt;
+      const subscription = await Subscription.findOne({ user });
 
-    // Verifying refresh token
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN_SECRET, async (err, decoded) => {
-      if (err) {
-        // Wrong Refesh Token
-        return res.status(406).json({ status: 'error', message: 'Unauthorized' });
-      } else {
-        // Correct token we send a new access token
-        const user = await User.findOne({ email: decoded.email });
-        const subscription = await Subscription.findOne({ user });
+      const token = genAccessToken({ email: user?.email }, {});
+      if (user.token !== token) user.token = token;
+      await user.save();
 
-        const token = genAccessToken({ email: user.email }, {});
-        if (user.token !== token) user.token = token;
-        await user.save();
-
-        delete subscription?.subscription?.session;
-        return res.send({
-          status: 'success',
-          message: 'You are logged in, welcome 🙌',
-          data: {
-            user: { ...user.toObject(), ...(subscription && { subscription: subscription?.subscription }) }
-          }
-        });
-      }
-    });
-  } else {
-    return res.status(406).json({ status: 'error', message: 'Unauthorized' });
-  }
+      delete subscription?.subscription?.session;
+      return res.send({
+        status: 'success',
+        message: 'You are logged in, welcome 🙌',
+        data: {
+          user: { ...user.toObject(), ...(subscription && { subscription: subscription?.subscription }) }
+        }
+      });
+    }
+  });
 
 });
 

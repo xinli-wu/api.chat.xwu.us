@@ -6,12 +6,13 @@ const auth = require('../../middleware/auth');
 const dayjs = require('dayjs');
 const router = express.Router();
 const Subscription = require('../../model/subscription');
+const utils = require('../../middleware/utils');
 
 const { WEB_UI, STRIPE_PRODUCT } = process.env;
 
 const product = STRIPE_PRODUCT;
 
-router.use(auth, async (req, res, next) => {
+router.use([utils, auth], async (req, res, next) => {
 
   next();
 
@@ -45,19 +46,18 @@ router.get('/prices', async (req, res) => {
 
 router.post('/verify-payment', async (req, res) => {
   const user = req['user'];
+  const { now } = req['utils'];
   const { sessionId } = req.body;
 
   const subscription = await Subscription.findOne({ user });
 
   if (subscription?.history?.some(x => x.session.id === sessionId) || subscription?.subscription?.session.id === sessionId) {
-    res.send({ status: 'error', message: 'Used payment session' });
-    return;
+    return res.send({ status: 'error', message: 'Used payment session' });
   }
 
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   if (!session) {
-    res.send({ status: 'error', message: 'Invalid payment session' });
-    return;
+    return res.send({ status: 'error', message: 'Invalid payment session' });
   }
 
   const lineItems = await stripe.checkout.sessions.listLineItems(sessionId);
@@ -66,16 +66,15 @@ router.post('/verify-payment', async (req, res) => {
 
   if (session.payment_status !== 'paid') {
     // Payment failed
-    res.send({ status: 'error', message: `Payment didn't go through` });
-    return;
+    return res.send({ status: 'error', message: `Payment didn't go through` });
   }
 
   const newSub = {
     user: user._id,
     subscription: {
       displayName,
-      from: dayjs().toISOString(),
-      to: dayjs().add(1, 'month').toISOString(),
+      from: now,
+      to: dayjs(now).add(1, 'month').toDate(),
       session
     }
   };
