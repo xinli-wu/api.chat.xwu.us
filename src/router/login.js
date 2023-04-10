@@ -53,7 +53,7 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   const origin = req.get('origin');
 
   if (!otp) {
-    const otp = genAccessToken({ email }, { expiresIn: '50m' });
+    const otp = genAccessToken({ email }, { expiresIn: '5m' });
     const encodedOTP = Buffer.from(otp).toString('base64');
 
     if (!user) {
