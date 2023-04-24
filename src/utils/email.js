@@ -19,7 +19,7 @@ const simpleEmail = async ({ to, subject, text, html = undefined }) => {
 
   try {
     const info = await transporter.sendMail({
-      from: '"uChat" <noreply@chat.xwu.us>',
+      from: '"uChat" <noreply.chat@xwu.us>',
       to,
       subject,
       text,
