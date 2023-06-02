@@ -71,9 +71,8 @@ router.post('/refresh', async (req, res) => {
 });
 
 router.post('/logout', async (req, res) => {
-  res.cookie('jwt', 'none', {
-    expires: new Date(Date.now() + 5 * 1000),
-    httpOnly: true,
+  res.status(200).clearCookie('jwt', {
+    path: '/',
   });
 
   res
