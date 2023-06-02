@@ -3,11 +3,7 @@
     "outDir": "./dist",
     "checkJs": true,
     "resolveJsonModule": true,
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"]
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -12,17 +12,19 @@ router.use([utils, auth], async (req, res, next) => {
   next();
 });
 
-
 router.get('/chat/:_id', async (req, res) => {
   const collection = db.collection('conversations');
   const user = req['user'];
   const { _id } = req.params;
 
   try {
-    const data = await collection.findOne({
-      'user._id': user._id,
-      _id: new mongoose.Types.ObjectId(_id)
-    }, { projection: { data: 1, metadata: 1 } });
+    const data = await collection.findOne(
+      {
+        'user._id': user._id,
+        _id: new mongoose.Types.ObjectId(_id),
+      },
+      { projection: { data: 1, metadata: 1 } },
+    );
 
     res.send({ status: 'success', data: data });
   } catch (error) {
@@ -35,10 +37,11 @@ router.get('/chat', async (req, res) => {
   const user = req['user'];
 
   try {
-    const data = await collection.find(
-      { 'user._id': user._id },
-      { projection: { data: { title: 1 }, metadata: 1 } }
-    )
+    const data = await collection
+      .find(
+        { 'user._id': user._id },
+        { projection: { data: { title: 1 }, metadata: 1 } },
+      )
       .sort({ 'metadata.c': -1 })
       .toArray();
 
@@ -55,21 +58,26 @@ router.post('/chat/add', async (req, res) => {
   const quota = req['plan'].feature[2].quota;
   const { now } = req['utils'];
 
-
   const used = await collection.countDocuments({ 'user._id': user._id });
 
   if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
 
-  const titlePrompt = chats.filter(x => x.message?.role === 'user').map(x => x.message?.content);
+  const titlePrompt = chats
+    .filter((x) => x.message?.role === 'user')
+    .map((x) => x.message?.content);
   try {
-    const completion = await openai.createCompletion(`give a title for this: ${JSON.stringify(titlePrompt)}`, {});
-    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || now.toISOString();
+    const completion = await openai.createCompletion(
+      `give a title for this: ${JSON.stringify(titlePrompt)}`,
+      {},
+    );
+    const title =
+      completion.data.choices[0]?.text?.replace(/\n/g, '') || now.toISOString();
 
     if (completion.data.choices[0].text.length > 0) {
       await collection.insertOne({
         metadata: { c: now },
         user: user,
-        data: { title, chats }
+        data: { title, chats },
       });
     }
 
@@ -85,10 +93,13 @@ router.get('/image/:_id', async (req, res) => {
   const { _id } = req.params;
 
   try {
-    const data = await collection.findOne({
-      'user._id': user._id,
-      _id: new mongoose.Types.ObjectId(_id)
-    }, { projection: { data: 1, metadata: 1 } });
+    const data = await collection.findOne(
+      {
+        'user._id': user._id,
+        _id: new mongoose.Types.ObjectId(_id),
+      },
+      { projection: { data: 1, metadata: 1 } },
+    );
 
     res.send({ status: 'success', data: data });
   } catch (error) {
@@ -101,10 +112,11 @@ router.get('/image', async (req, res) => {
   const user = req['user'];
 
   try {
-    const data = await collection.find(
-      { 'user._id': user._id },
-      { projection: { data: { title: 1 }, metadata: 1 } }
-    )
+    const data = await collection
+      .find(
+        { 'user._id': user._id },
+        { projection: { data: { title: 1 }, metadata: 1 } },
+      )
       .sort({ 'metadata.c': -1 })
       .toArray();
 
@@ -132,7 +144,7 @@ router.post('/image/add', async (req, res) => {
     await collection.insertOne({
       metadata: { c: now },
       user: user,
-      data: { title, chats }
+      data: { title, chats },
     });
 
     res.send({ status: 'success', data: { title } });
@@ -146,10 +158,11 @@ router.get('/openai/chat/completion-hitory', async (req, res) => {
   const user = req['user'];
 
   try {
-    const data = await collection.find(
-      { 'user._id': user._id },
-      { projection: { content: 1, 'metadata.c': 1, '_id': 0 } }
-    )
+    const data = await collection
+      .find(
+        { 'user._id': user._id },
+        { projection: { content: 1, 'metadata.c': 1, _id: 0 } },
+      )
       .sort({ 'metadata.c': -1 })
       .toArray();
 

@@ -9,7 +9,9 @@ const jwt = require('jsonwebtoken');
 const { Buffer } = require('node:buffer');
 
 const sendOTP = async ({ origin, email, otp }) => {
-  const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
+  const link = `${origin}/login?email=${encodeURIComponent(
+    email,
+  )}&otp=${encodeURIComponent(otp)}`;
 
   return simpleEmail({
     to: email,
@@ -33,7 +35,7 @@ router.use(utils, async (req, res, next) => {
 
   if (!email || !emailRegex.test(email)) {
     return res.status(403).send({ status: 'error', message: 'Wrong params' });
-  };
+  }
 
   email = email.toLowerCase();
   const user = await User.findOne({ email });
@@ -67,17 +69,20 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
     await user.save();
     await sendOTP({ origin, email, otp: encodedOTP });
 
-    return res.send({ status: 'success', message: 'Please click on the link sent to your email.' });
+    return res.send({
+      status: 'success',
+      message: 'Please click on the link sent to your email.',
+    });
   }
 
-
   try {
-
     const decodedOTP = Buffer.from(otp, 'base64').toString('ascii');
     jwt.verify(decodedOTP, process.env.JWT_ACCESS_TOKEN_SECRET);
-
   } catch (error) {
-    return res.status(406).send({ status: 'error', message: 'Wrong or Expired OTP, please request a new one.' });
+    return res.status(406).send({
+      status: 'error',
+      message: 'Wrong or Expired OTP, please request a new one.',
+    });
   }
 
   // Correct OTP, del OTP in db and issue token
@@ -86,7 +91,10 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   user.token = genAccessToken({ _id: user._id, email: user.email }, {});
   await user.save();
 
-  const refreshToken = genRefershToken({ _id: user._id, email: user.email }, {});
+  const refreshToken = genRefershToken(
+    { _id: user._id, email: user.email },
+    {},
+  );
 
   // res.header('Access-Control-Allow-Credentials', 'true');
 
@@ -102,10 +110,8 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   res.send({
     status: 'success',
     message: 'You are logged in, welcome 🙌',
-    data: { user }
+    data: { user },
   });
 });
-
-
 
 module.exports = router;

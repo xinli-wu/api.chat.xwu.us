@@ -17,7 +17,7 @@ router.use([utils, auth], async (req, res, next) => {
 
   const used = await collection.countDocuments({
     'user.email': user.email,
-    'metadata.c': { $gte: dayjs(now).subtract(1, 'days').toDate() }
+    'metadata.c': { $gte: dayjs(now).subtract(1, 'days').toDate() },
   });
 
   if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
@@ -31,23 +31,22 @@ router.use([utils, auth], async (req, res, next) => {
     await collection.insertOne({
       ...messages[messages.length - 1],
       user: user,
-      metadata: { c: now, originalUrl, ip, rawHeaders }
+      metadata: { c: now, originalUrl, ip, rawHeaders },
     });
-
   } catch (err) {
     console.error(err);
   }
 
   next();
-
 });
 
 router.post('/completion', async (req, res) => {
   const { messages } = req.body;
 
   try {
-
-    const completion = await openai.createChatCompletion(messages, { stream: true });
+    const completion = await openai.createChatCompletion(messages, {
+      stream: true,
+    });
 
     // console.log('==============================================================================');
     // console.log('completion.ok', completion.ok);

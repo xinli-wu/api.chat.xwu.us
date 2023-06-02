@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
 
 const { EMAIL_HOST, EMAIL_USER, EMAIL_PASS } = process.env;
 
@@ -23,15 +23,14 @@ const simpleEmail = async ({ to, subject, text, html = undefined }) => {
       to,
       subject,
       text,
-      html
+      html,
     });
 
-    console.log("Message sent: %s", info.messageId);
+    console.log('Message sent: %s', info.messageId);
     return Promise.resolve(info);
   } catch (error) {
     return Promise.reject(error);
   }
-
 };
 
 module.exports = { simpleEmail };

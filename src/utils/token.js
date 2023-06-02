@@ -12,5 +12,5 @@ const genRefershToken = (obj, { expiresIn = '1d' }) => {
 
 module.exports = {
   genAccessToken,
-  genRefershToken
+  genRefershToken,
 };

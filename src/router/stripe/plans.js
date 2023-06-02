@@ -1,4 +1,3 @@
-
 const planConfig = [
   {
     id: null,
@@ -9,7 +8,7 @@ const planConfig = [
       { id: 1, quota: 10 },
       { id: 2, quota: 2 },
       { id: 3, quota: 5 },
-    ]
+    ],
   },
   {
     id: undefined,
@@ -20,7 +19,7 @@ const planConfig = [
       { id: 1, quota: 50 },
       { id: 2, quota: 5 },
       { id: 3, quota: 20 },
-    ]
+    ],
   },
   {
     id: undefined,
@@ -31,7 +30,7 @@ const planConfig = [
       { id: 1, quota: 100 },
       { id: 2, quota: 10 },
       { id: 3, quota: 50 },
-    ]
+    ],
   },
   {
     id: undefined,
@@ -42,12 +41,11 @@ const planConfig = [
       { id: 1, quota: 300 },
       { id: 2, quota: 30 },
       { id: 3, quota: 200 },
-    ]
+    ],
   },
 ];
 
 const features = () => {
-
   return [
     { id: 1, desc: 'Chat completion per day' },
     { id: 2, desc: 'Image generation per day' },
@@ -55,18 +53,17 @@ const features = () => {
   ];
 };
 const plans = ({ prices }) => {
-
-  return planConfig.map(plan => (
-    {
-      ...plan,
-      id: prices.find(x => x.metadata.displayName === plan.name)?.id || null,
-      price: prices.find(x => x.metadata.displayName === plan.name)?.unit_amount || 0
-    }
-  ));
+  return planConfig.map((plan) => ({
+    ...plan,
+    id: prices.find((x) => x.metadata.displayName === plan.name)?.id || null,
+    price:
+      prices.find((x) => x.metadata.displayName === plan.name)?.unit_amount ||
+      0,
+  }));
 };
 
 module.exports = {
   plans,
   planConfig,
-  features
+  features,
 };

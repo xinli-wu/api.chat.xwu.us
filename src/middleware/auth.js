@@ -21,8 +21,10 @@ const auth = async (req, res, next) => {
 
     req.user = user;
     req.subscription = subscription;
-    req.plan = planConfig.find(x => x.name === subscription?.subscription?.displayName) || planConfig[0];
-
+    req.plan =
+      planConfig.find(
+        (x) => x.name === subscription?.subscription?.displayName,
+      ) || planConfig[0];
   } catch (err) {
     return res.status(401).send({ status: 'error', message: 'Invalid Token' });
   }
