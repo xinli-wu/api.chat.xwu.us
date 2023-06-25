@@ -38,10 +38,7 @@ router.get('/chat', async (req, res) => {
 
   try {
     const data = await collection
-      .find(
-        { 'user._id': user._id },
-        { projection: { data: { title: 1 }, metadata: 1 } },
-      )
+      .find({ 'user._id': user._id }, { projection: { data: { title: 1 }, metadata: 1 } })
       .sort({ 'metadata.c': -1 })
       .toArray();
 
@@ -62,16 +59,10 @@ router.post('/chat/add', async (req, res) => {
 
   if (used >= quota) return res.status(400).json({ message: 'Quota exceeded' });
 
-  const titlePrompt = chats
-    .filter((x) => x.message?.role === 'user')
-    .map((x) => x.message?.content);
+  const titlePrompt = chats.filter((x) => x.message?.role === 'user').map((x) => x.message?.content);
   try {
-    const completion = await openai.createCompletion(
-      `give a title for this: ${JSON.stringify(titlePrompt)}`,
-      {},
-    );
-    const title =
-      completion.data.choices[0]?.text?.replace(/\n/g, '') || now.toISOString();
+    const completion = await openai.createCompletion(`give a title for this: ${JSON.stringify(titlePrompt)}`, {});
+    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || now.toISOString();
 
     if (completion.data.choices[0].text.length > 0) {
       await collection.insertOne({
@@ -113,10 +104,7 @@ router.get('/image', async (req, res) => {
 
   try {
     const data = await collection
-      .find(
-        { 'user._id': user._id },
-        { projection: { data: { title: 1 }, metadata: 1 } },
-      )
+      .find({ 'user._id': user._id }, { projection: { data: { title: 1 }, metadata: 1 } })
       .sort({ 'metadata.c': -1 })
       .toArray();
 
@@ -159,10 +147,7 @@ router.get('/openai/chat/completion-hitory', async (req, res) => {
 
   try {
     const data = await collection
-      .find(
-        { 'user._id': user._id },
-        { projection: { content: 1, 'metadata.c': 1, _id: 0 } },
-      )
+      .find({ 'user._id': user._id }, { projection: { content: 1, 'metadata.c': 1, _id: 0 } })
       .sort({ 'metadata.c': -1 })
       .toArray();
 

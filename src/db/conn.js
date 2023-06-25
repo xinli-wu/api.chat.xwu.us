@@ -2,8 +2,7 @@ const mongoose = require('mongoose');
 const { config } = require('dotenv');
 config();
 
-const { MONGO_HOST, MONGO_PORT, MONGO_DB, MONGO_USER, MONGO_PASS } =
-  process.env;
+const { MONGO_HOST, MONGO_PORT, MONGO_DB, MONGO_USER, MONGO_PASS } = process.env;
 const db = mongoose.connection;
 const conn = () => {
   mongoose.connect(`mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`, {

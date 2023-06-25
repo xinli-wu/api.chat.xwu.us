@@ -56,9 +56,7 @@ const plans = ({ prices }) => {
   return planConfig.map((plan) => ({
     ...plan,
     id: prices.find((x) => x.metadata.displayName === plan.name)?.id || null,
-    price:
-      prices.find((x) => x.metadata.displayName === plan.name)?.unit_amount ||
-      0,
+    price: prices.find((x) => x.metadata.displayName === plan.name)?.unit_amount || 0,
   }));
 };
 

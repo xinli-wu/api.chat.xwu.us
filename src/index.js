@@ -19,12 +19,7 @@ const port = 4000;
 
 app.use(
   cors({
-    origin: [
-      ...(process.env.NODE_ENV === 'development'
-        ? ['http://localhost:3000']
-        : []),
-      'https://chat.xwu.us',
-    ],
+    origin: [...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []), 'https://chat.xwu.us'],
     credentials: true,
   }),
 );

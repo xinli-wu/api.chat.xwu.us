@@ -33,8 +33,7 @@ router.get('/', auth, async (req, res) => {
 router.post('/refresh', async (req, res) => {
   const { jwt: refreshToken } = req.cookies || {};
 
-  if (!refreshToken)
-    return res.status(406).json({ status: 'error', message: 'Unauthorized' });
+  if (!refreshToken) return res.status(406).json({ status: 'error', message: 'Unauthorized' });
 
   // Verifying refresh token
   jwt.verify(refreshToken, JWT_REFRESH_TOKEN_SECRET, async (err, decoded) => {
@@ -44,10 +43,7 @@ router.post('/refresh', async (req, res) => {
     } else {
       // Correct token we send a new access token
       const user = await User.findOne({ email: decoded.email });
-      if (!user)
-        return res
-          .status(406)
-          .json({ status: 'error', message: 'Unauthorized' });
+      if (!user) return res.status(406).json({ status: 'error', message: 'Unauthorized' });
 
       const subscription = await Subscription.findOne({ user });
 
@@ -75,9 +71,7 @@ router.post('/logout', async (req, res) => {
     path: '/',
   });
 
-  res
-    .status(200)
-    .json({ status: 'success', message: 'User logged out successfully' });
+  res.status(200).json({ status: 'success', message: 'User logged out successfully' });
 });
 
 module.exports = router;

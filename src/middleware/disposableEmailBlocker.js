@@ -7,8 +7,7 @@ const BLOCK_LIST_URL =
 const disposableEmailBlocker = async (req, res, next) => {
   let { email } = req.body;
   email = email.toLowerCase();
-  const { data } =
-    (await axios(BLOCK_LIST_URL, { responseType: 'text' })) || {};
+  const { data } = (await axios(BLOCK_LIST_URL, { responseType: 'text' })) || {};
 
   const blockList = [...data.split('\n'), ...localBlockList];
 

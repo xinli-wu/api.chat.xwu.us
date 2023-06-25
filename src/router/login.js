@@ -9,9 +9,7 @@ const jwt = require('jsonwebtoken');
 const { Buffer } = require('node:buffer');
 
 const sendOTP = async ({ origin, email, otp }) => {
-  const link = `${origin}/login?email=${encodeURIComponent(
-    email,
-  )}&otp=${encodeURIComponent(otp)}`;
+  const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
 
   return simpleEmail({
     to: email,
@@ -91,10 +89,7 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   user.token = genAccessToken({ _id: user._id, email: user.email }, {});
   await user.save();
 
-  const refreshToken = genRefershToken(
-    { _id: user._id, email: user.email },
-    {},
-  );
+  const refreshToken = genRefershToken({ _id: user._id, email: user.email }, {});
 
   // res.header('Access-Control-Allow-Credentials', 'true');
 
