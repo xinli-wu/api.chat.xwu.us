@@ -5,7 +5,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const createChatCompletion = (messages, { model = 'gpt-3.5-turbo', stream = false }) => {
+const createChatCompletion = (messages, { model, stream = false }) => {
   return openai.createChatCompletion(
     {
       model: model,

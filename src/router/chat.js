@@ -3,11 +3,20 @@ const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
-
 const db = mongoose.connection;
-
 const openai = require('../openai/chatCompletion');
 const utils = require('../middleware/utils');
+
+const models = [
+  { group: 'GPT-4', id: 'gpt-4', desc: '' },
+  { group: 'GPT-4', id: 'gpt-4-32k', desc: '' },
+  { group: 'GPT-3.5', id: 'gpt-3.5-turbo', desc: '' },
+  { group: 'GPT-3.5', id: 'gpt-3.5-turbo-16k', desc: '' },
+];
+
+router.get('/getModels', async (_req, res) => {
+  return res.send({ status: 'success', data: models });
+});
 
 router.use([utils, auth], async (req, res, next) => {
   const collection = db.collection('chats');
@@ -36,15 +45,19 @@ router.use([utils, auth], async (req, res, next) => {
   } catch (err) {
     console.error(err);
   }
-
   next();
 });
 
 router.post('/completion', async (req, res) => {
-  const { messages } = req.body;
+  const { messages, config } = req.body;
+
+  const isSupportedModel = models.find((m) => m.id === config.model.id);
+
+  if (!isSupportedModel) return res.status(400).json({ message: 'Model not supported' });
 
   try {
     const completion = await openai.createChatCompletion(messages, {
+      model: config.model.id,
       stream: true,
     });
 
