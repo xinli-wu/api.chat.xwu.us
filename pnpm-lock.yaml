@@ -29,6 +29,9 @@ dependencies:
   express:
     specifier: ^4.18.2
     version: 4.18.2
+  husky:
+    specifier: ^8.0.3
+    version: 8.0.3
   jsonwebtoken:
     specifier: ^9.0.1
     version: 9.0.1
@@ -70,9 +73,6 @@ devDependencies:
   eslint-plugin-prettier:
     specifier: ^5.0.0
     version: 5.0.0(eslint-config-prettier@8.8.0)(eslint@8.45.0)(prettier@3.0.0)
-  husky:
-    specifier: ^8.0.3
-    version: 8.0.3
   lint-staged:
     specifier: ^13.2.3
     version: 13.2.3
@@ -1981,7 +1981,7 @@ packages:
     resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
     engines: {node: '>=14'}
     hasBin: true
-    dev: true
+    dev: false
 
   /iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
