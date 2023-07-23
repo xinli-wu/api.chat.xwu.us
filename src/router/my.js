@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
@@ -14,7 +15,7 @@ router.use([utils, auth], async (req, res, next) => {
 
 router.get('/chat/:_id', async (req, res) => {
   const collection = db.collection('conversations');
-  const user = req['user'];
+  const { user } = req;
   const { _id } = req.params;
 
   try {
@@ -23,18 +24,18 @@ router.get('/chat/:_id', async (req, res) => {
         'user._id': user._id,
         _id: new mongoose.Types.ObjectId(_id),
       },
-      { projection: { data: 1, metadata: 1 } },
+      { projection: { data: 1, metadata: 1 } }
     );
 
-    res.send({ status: 'success', data: data });
+    return res.send({ status: 'success', data });
   } catch (error) {
-    res.send({ status: 'error', message: error.message });
+    return res.send({ status: 'error', message: error.message });
   }
 });
 
 router.get('/chat', async (req, res) => {
   const collection = db.collection('conversations');
-  const user = req['user'];
+  const { user } = req;
 
   try {
     const data = await collection
@@ -42,18 +43,18 @@ router.get('/chat', async (req, res) => {
       .sort({ 'metadata.c': -1 })
       .toArray();
 
-    res.send({ status: 'success', data: data });
+    return res.send({ status: 'success', data });
   } catch (error) {
-    res.send({ status: 'error', message: error.message });
+    return res.send({ status: 'error', message: error.message });
   }
 });
 
 router.post('/chat/add', async (req, res) => {
   const { chats } = req.body;
   const collection = db.collection('conversations');
-  const user = req['user'];
-  const quota = req['plan'].feature[2].quota;
-  const { now } = req['utils'];
+  const { user } = req;
+  const { quota } = req.plan.feature[2];
+  const { now } = req.utils;
 
   const used = await collection.countDocuments({ 'user._id': user._id });
 
@@ -67,20 +68,20 @@ router.post('/chat/add', async (req, res) => {
     if (completion.data.choices[0].text.length > 0) {
       await collection.insertOne({
         metadata: { c: now },
-        user: user,
+        user,
         data: { title, chats },
       });
     }
 
-    res.send({ status: 'success', data: { title } });
+    return res.send({ status: 'success', data: { title } });
   } catch (error) {
-    res.send({ status: 'error', message: error.message });
+    return res.send({ status: 'error', message: error.message });
   }
 });
 
 router.get('/image/:_id', async (req, res) => {
   const collection = db.collection('images');
-  const user = req['user'];
+  const { user } = req;
   const { _id } = req.params;
 
   try {
@@ -89,10 +90,10 @@ router.get('/image/:_id', async (req, res) => {
         'user._id': user._id,
         _id: new mongoose.Types.ObjectId(_id),
       },
-      { projection: { data: 1, metadata: 1 } },
+      { projection: { data: 1, metadata: 1 } }
     );
 
-    res.send({ status: 'success', data: data });
+    res.send({ status: 'success', data });
   } catch (error) {
     res.send({ status: 'error', message: error.message });
   }
@@ -100,7 +101,7 @@ router.get('/image/:_id', async (req, res) => {
 
 router.get('/image', async (req, res) => {
   const collection = db.collection('images');
-  const user = req['user'];
+  const { user } = req;
 
   try {
     const data = await collection
@@ -108,7 +109,7 @@ router.get('/image', async (req, res) => {
       .sort({ 'metadata.c': -1 })
       .toArray();
 
-    res.send({ status: 'success', data: data });
+    res.send({ status: 'success', data });
   } catch (error) {
     res.send({ status: 'error', message: error.message });
   }
@@ -116,11 +117,11 @@ router.get('/image', async (req, res) => {
 
 router.post('/image/add', async (req, res) => {
   const collection = db.collection('images');
-  const user = req['user'];
-  const { now } = req['utils'];
+  const { user } = req;
+  const { now } = req.utils;
   const { chats } = req.body;
 
-  const quota = req['plan'].feature[2].quota;
+  const { quota } = req.plan.feature[2];
 
   const used = await collection.countDocuments({ 'user._id': user._id });
 
@@ -131,19 +132,19 @@ router.post('/image/add', async (req, res) => {
 
     await collection.insertOne({
       metadata: { c: now },
-      user: user,
+      user,
       data: { title, chats },
     });
 
-    res.send({ status: 'success', data: { title } });
+    return res.send({ status: 'success', data: { title } });
   } catch (error) {
-    res.send({ status: 'error', message: error.message });
+    return res.send({ status: 'error', message: error.message });
   }
 });
 
 router.get('/openai/chat/completion-hitory', async (req, res) => {
   const collection = db.collection('chats');
-  const user = req['user'];
+  const { user } = req;
 
   try {
     const data = await collection
@@ -151,9 +152,9 @@ router.get('/openai/chat/completion-hitory', async (req, res) => {
       .sort({ 'metadata.c': -1 })
       .toArray();
 
-    res.send({ status: 'success', data: data });
+    return res.send({ status: 'success', data });
   } catch (error) {
-    res.send({ status: 'error', message: error.message });
+    return res.send({ status: 'error', message: error.message });
   }
 });
 

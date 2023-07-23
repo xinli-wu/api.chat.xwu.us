@@ -5,25 +5,23 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-const createChatCompletion = (messages, { model, stream = false }) => {
-  return openai.createChatCompletion(
+const createChatCompletion = (messages, { model, stream = false }) =>
+  openai.createChatCompletion(
     {
-      model: model,
-      messages: messages,
+      model,
+      messages,
       temperature: 0.6,
       max_tokens: 1000,
-      stream: stream,
+      stream,
     },
-    { ...(stream && { responseType: 'stream' }) },
+    { ...(stream && { responseType: 'stream' }) }
   );
-};
 
-const createCompletion = (prompt, { model = 'text-curie-001' }) => {
-  return openai.createCompletion({
-    model: model,
-    prompt: prompt,
+const createCompletion = (prompt, { model = 'text-curie-001' }) =>
+  openai.createCompletion({
+    model,
+    prompt,
   });
-};
 
 module.exports = {
   createChatCompletion,

@@ -1,12 +1,13 @@
 const express = require('express');
+
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const { Buffer } = require('node:buffer');
 const User = require('../model/user');
 const { simpleEmail } = require('../utils/email');
 const disposableEmailBlocker = require('../middleware/disposableEmailBlocker');
 const { genAccessToken, genRefershToken } = require('../utils/token');
 const utils = require('../middleware/utils');
-const jwt = require('jsonwebtoken');
-const { Buffer } = require('node:buffer');
 
 const sendOTP = async ({ origin, email, otp }) => {
   const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
@@ -38,23 +39,23 @@ router.use(utils, async (req, res, next) => {
   email = email.toLowerCase();
   const user = await User.findOne({ email });
 
-  req['email'] = email;
-  req['user'] = user;
+  req.email = email;
+  req.user = user;
 
-  next();
+  return next();
 });
 
 router.post('/', disposableEmailBlocker, async (req, res) => {
-  let user = req['user'];
-  const { now } = req['utils'];
-  const email = req['email'];
+  let { user } = req;
+  const { now } = req.utils;
+  const { email } = req;
 
   const { otp } = req.body;
   const origin = req.get('origin');
 
   if (!otp) {
-    const otp = genAccessToken({ email }, { expiresIn: '5m' });
-    const encodedOTP = Buffer.from(otp).toString('base64');
+    const newOTP = genAccessToken({ email }, { expiresIn: '5m' });
+    const encodedOTP = Buffer.from(newOTP).toString('base64');
 
     if (!user) {
       // first time user, add to db and send opt
@@ -102,7 +103,7 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
     path: '/',
   });
 
-  res.send({
+  return res.send({
     status: 'success',
     message: 'You are logged in, welcome 🙌',
     data: { user },

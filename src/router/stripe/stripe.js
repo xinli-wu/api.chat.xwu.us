@@ -1,9 +1,10 @@
 // This is your test secret API key.
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const express = require('express');
+const dayjs = require('dayjs');
 const { plans, features } = require('./plans');
 const auth = require('../../middleware/auth');
-const dayjs = require('dayjs');
+
 const router = express.Router();
 const Subscription = require('../../model/subscription');
 const utils = require('../../middleware/utils');
@@ -16,31 +17,29 @@ router.use([utils, auth], async (req, res, next) => {
   next();
 });
 
-router.get('/features', async (req, res) => {
-  res.send(features());
-});
+router.get('/features', async (req, res) => res.send(features()));
 
 router.get('/plans', async (req, res) => {
-  const prices = await stripe.prices.list({ active: true, product: product });
+  const prices = await stripe.prices.list({ active: true, product });
 
-  res.send(plans({ prices: prices.data }));
+  return res.send(plans({ prices: prices.data }));
 });
 
 router.get('/products', async (req, res) => {
   const { data } = await stripe.products.list({ active: true, ids: [product] });
 
-  res.send(data);
+  return res.send(data);
 });
 
 router.get('/prices', async (req, res) => {
-  const { data } = await stripe.prices.list({ active: true, product: product });
+  const { data } = await stripe.prices.list({ active: true, product });
 
-  res.send(data);
+  return res.send(data);
 });
 
 router.post('/verify-payment', async (req, res) => {
-  const user = req['user'];
-  const { now } = req['utils'];
+  const { user } = req;
+  const { now } = req.utils;
   const { sessionId } = req.body;
 
   const subscription = await Subscription.findOne({ user });
@@ -59,11 +58,11 @@ router.post('/verify-payment', async (req, res) => {
 
   const lineItems = await stripe.checkout.sessions.listLineItems(sessionId);
 
-  const displayName = lineItems.data[0].price.metadata.displayName;
+  const { displayName } = lineItems.data[0].price.metadata;
 
   if (session.payment_status !== 'paid') {
     // Payment failed
-    return res.send({ status: 'error', message: `Payment didn't go through` });
+    return res.send({ status: 'error', message: "Payment didn't go through" });
   }
 
   const newSub = {
@@ -76,20 +75,18 @@ router.post('/verify-payment', async (req, res) => {
     },
   };
 
-  if (session.payment_status === 'paid') {
-    // Payment succeeded
-    if (subscription?.subscription && Object.keys(subscription?.subscription).length) {
-      // user has active subscription, archive current subscription
-      subscription.history.push(subscription.subscription);
-      await subscription.updateOne(newSub);
-      await subscription.save();
-    } else {
-      const sub = await Subscription.create(newSub);
-      await sub.save();
-    }
-
-    res.send({ status: 'success', message: 'Thanks for your payment.' });
+  // Payment succeeded
+  if (subscription?.subscription && Object.keys(subscription?.subscription).length) {
+    // user has active subscription, archive current subscription
+    subscription.history.push(subscription.subscription);
+    await subscription.updateOne(newSub);
+    await subscription.save();
+  } else {
+    const sub = await Subscription.create(newSub);
+    await sub.save();
   }
+
+  return res.send({ status: 'success', message: 'Thanks for your payment.' });
 });
 
 router.post('/create-checkout-session', async (req, res) => {
@@ -114,9 +111,9 @@ router.post('/create-checkout-session', async (req, res) => {
 router.post('/create-portal-session', async (req, res) => {
   // For demonstration purposes, we're using the Checkout session to retrieve the customer ID.
   // Typically this is stored alongside the authenticated user in your database.
-  const { session_id } = req.body;
+  const { session_id: sessionId } = req.body;
 
-  const checkoutSession = await stripe.checkout.sessions.retrieve(session_id);
+  const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
 
   // This is the url to which the customer will be redirected when they are done
   // managing their billing with the portal.
@@ -145,7 +142,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), (req, res) =>
     try {
       event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
     } catch (err) {
-      console.log(`⚠️  Webhook signature verification failed.`, err.message);
+      console.log('⚠️  Webhook signature verification failed.', err.message);
       return res.sendStatus(400);
     }
   }
@@ -186,7 +183,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), (req, res) =>
       console.log(`Unhandled event type ${event.type}.`);
   }
   // Return a 200 response to acknowledge receipt of the event
-  res.send();
+  return res.send();
 });
 
 module.exports = router;

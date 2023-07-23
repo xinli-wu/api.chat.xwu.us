@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const Subscription = require('../model/subscription');
-const { plans, planConfig } = require('../router/stripe/plans');
+const { planConfig } = require('../router/stripe/plans');
 
 const config = process.env;
 
 const auth = async (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
     return res.status(403).send('A token is required for authentication');

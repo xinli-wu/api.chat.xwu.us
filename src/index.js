@@ -1,12 +1,13 @@
 const { config } = require('dotenv');
-config();
-const conn = require('./db/conn');
-conn();
 
+config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
+const conn = require('./db/conn');
+
+conn();
 const chat = require('./router/chat');
 const image = require('./router/image');
 const login = require('./router/login');
@@ -21,7 +22,7 @@ app.use(
   cors({
     origin: [...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []), 'https://chat.xwu.us'],
     credentials: true,
-  }),
+  })
 );
 
 app.use(express.json({ limit: '1mb' }));
