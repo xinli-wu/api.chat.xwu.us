@@ -1,14 +1,13 @@
-const express = require('express');
-
-const router = express.Router();
-const jwt = require('jsonwebtoken');
 const { Buffer } = require('node:buffer');
+const express = require('express');
+const jwt = require('jsonwebtoken');
 const User = require('../model/user');
 const { simpleEmail } = require('../utils/email');
 const disposableEmailBlocker = require('../middleware/disposableEmailBlocker');
 const { genAccessToken, genRefershToken } = require('../utils/token');
 const utils = require('../middleware/utils');
 
+const router = express.Router();
 const sendOTP = async ({ origin, email, otp }) => {
   const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
 

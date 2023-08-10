@@ -67,11 +67,15 @@ router.post('/refresh', async (req, res) => {
 });
 
 router.post('/logout', async (req, res) => {
-  res.status(200).clearCookie('jwt', {
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    domain: process.env.NODE_ENV === 'production' ? 'chat.xwu.us' : 'localhost',
     path: '/',
   });
 
-  return res.status(200).json({ status: 'success', message: 'User logged out successfully' });
+  return res.end({ status: 'success', message: 'User logged out successfully' });
 });
 
 module.exports = router;
