@@ -3,16 +3,11 @@ const express = require('express');
 const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
-const { Configuration, OpenAIApi } = require('openai');
+const openai = require('../openai/image');
 const auth = require('../middleware/auth');
 const utils = require('../middleware/utils');
 
 const db = mongoose.connection;
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
 
 // middleware that is specific to this router
 router.use([utils, auth], async (req, res, next) => {

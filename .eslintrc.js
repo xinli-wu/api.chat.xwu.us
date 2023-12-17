@@ -15,5 +15,7 @@ module.exports = {
   plugins: ['prettier'],
   rules: {
     'no-underscore-dangle': 'off',
+    'no-restricted-syntax': 'off',
+    'no-unused-vars': 'off',
   },
 };

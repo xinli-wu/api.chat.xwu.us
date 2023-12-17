@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
-const openai = require('../openai/chatCompletion');
+const openai = require('../openai/chat');
 const utils = require('../middleware/utils');
 
 const db = mongoose.connection;
@@ -22,7 +22,7 @@ router.get('/chat/:_id', async (req, res) => {
     const data = await collection.findOne(
       {
         'user._id': user._id,
-        _id: new mongoose.Types.ObjectId(_id),
+        '_id': new mongoose.Types.ObjectId(_id),
       },
       { projection: { data: 1, metadata: 1 } }
     );
@@ -88,7 +88,7 @@ router.get('/image/:_id', async (req, res) => {
     const data = await collection.findOne(
       {
         'user._id': user._id,
-        _id: new mongoose.Types.ObjectId(_id),
+        '_id': new mongoose.Types.ObjectId(_id),
       },
       { projection: { data: 1, metadata: 1 } }
     );
@@ -148,7 +148,7 @@ router.get('/openai/chat/completion-hitory', async (req, res) => {
 
   try {
     const data = await collection
-      .find({ 'user._id': user._id }, { projection: { content: 1, 'metadata.c': 1, _id: 0 } })
+      .find({ 'user._id': user._id }, { projection: { 'content': 1, 'metadata.c': 1, '_id': 0 } })
       .sort({ 'metadata.c': -1 })
       .toArray();
 

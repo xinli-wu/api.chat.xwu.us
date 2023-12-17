@@ -6,13 +6,13 @@ const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 
 const db = mongoose.connection;
-const openai = require('../openai/chatCompletion');
+const { openai } = require('../openai/chat');
 const utils = require('../middleware/utils');
 
 const models = [
   // { group: 'GPT-4', id: 'gpt-4', desc: '' },
   // { group: 'GPT-4', id: 'gpt-4-32k', desc: '' },
-  { group: 'GPT-3.5', id: 'gpt-3.5-turbo', desc: '' },
+  { group: 'GPT-3.5', id: 'gpt-3.5-turbo-0613', desc: '' },
   // { group: 'GPT-3.5', id: 'gpt-3.5-turbo-16k', desc: '' },
 ];
 
@@ -40,12 +40,7 @@ router.use([utils, auth], async (req, res, next) => {
     await collection.insertOne({
       ...messages[messages.length - 1],
       user,
-      metadata: {
-        c: now,
-        originalUrl,
-        ip,
-        rawHeaders,
-      },
+      metadata: { c: now, originalUrl, ip, rawHeaders },
     });
   } catch (err) {
     console.error(err);
@@ -61,38 +56,17 @@ router.post('/completion', async (req, res) => {
   if (!isSupportedModel) return res.status(400).json({ message: 'Model not supported' });
 
   try {
-    const completion = await openai.createChatCompletion(messages, {
+    const stream = await openai.beta.chat.completions.stream({
+      messages,
       model: config.model.id,
       stream: true,
     });
 
-    // console.log('==============================================================================');
-    // console.log('completion.ok', completion.ok);
+    for await (const chunk of stream) {
+      res.write(`${JSON.stringify(chunk)}\n`);
+    }
 
-    // completion.data.on('data', data => {
-    //   const lines = data.toString().split('\n').filter(line => line.trim() !== '');
-    //   console.log(lines);
-    //   // console.log(lines);
-    //   // for (const line of lines) {
-    //   //   const message = line.replace(/^data: /, '');
-    //   //   if (message === '[DONE]') {
-    //   //     console.log('[done]');
-    //   //     return; // Stream finished
-    //   //   }
-    //   //   try {
-    //   //     const parsed = JSON.parse(message);
-    //   //     console.log(parsed.choices[0].text);
-    //   //   } catch (error) {
-    //   //     console.error('Could not JSON parse stream message', message, error);
-    //   //   }
-    //   // }
-    // });
-
-    // console.log(completion.data);
-
-    return completion.data.pipe(res);
-
-    // res.send('completion.data');
+    return res.end();
   } catch (error) {
     console.log(error);
     // Consider adjusting the error handling logic for your use case
