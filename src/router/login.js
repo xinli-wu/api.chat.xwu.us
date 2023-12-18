@@ -98,7 +98,7 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
-    domain: process.env.NODE_ENV === 'production' ? 'chat.xwu.us' : 'localhost',
+    domain: process.env.NODE_ENV === 'production' ? 'chat.xwu.us' : 'localhost:3000',
     path: '/',
   });
 
