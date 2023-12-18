@@ -96,9 +96,9 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   res.cookie('jwt', refreshToken, {
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     secure: process.env.NODE_ENV === 'production',
-    domain: process.env.NODE_ENV === 'production' ? 'chat.xwu.us' : 'localhost:3000',
+    domain: process.env.NODE_ENV === 'production' ? 'chat.xwu.us' : 'localhost',
     path: '/',
   });
 

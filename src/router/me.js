@@ -69,9 +69,9 @@ router.post('/refresh', async (req, res) => {
 router.post('/logout', async (req, res) => {
   res.clearCookie('jwt', {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     secure: process.env.NODE_ENV === 'production',
-    domain: process.env.NODE_ENV === 'production' ? 'chat.xwu.us' : 'localhost:3000',
+    domain: process.env.NODE_ENV === 'production' ? 'chat.xwu.us' : 'localhost',
     path: '/',
   });
 
