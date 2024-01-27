@@ -3,8 +3,9 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
-const openai = require('../openai/chat');
+const { openai } = require('../openai/chat');
 const utils = require('../middleware/utils');
+const { createChatCompletion } = require('../openai/chat');
 
 const db = mongoose.connection;
 
@@ -62,16 +63,22 @@ router.post('/chat/add', async (req, res) => {
 
   const titlePrompt = chats.filter((x) => x.message?.role === 'user').map((x) => x.message?.content);
   try {
-    const completion = await openai.createCompletion(`give a title for this: ${JSON.stringify(titlePrompt)}`, {});
-    const title = completion.data.choices[0]?.text?.replace(/\n/g, '') || now.toISOString();
+    const completion = await openai.chat.completions.create({
+      messages: [
+        {
+          role: 'user',
+          content: `give a title for this: ${JSON.stringify(titlePrompt)}`,
+        },
+      ],
+      model: 'gpt-3.5-turbo',
+    });
+    const title = completion.choices[0].message.content?.replace(/\n/g, '') || now.toISOString();
 
-    if (completion.data.choices[0].text.length > 0) {
-      await collection.insertOne({
-        metadata: { c: now },
-        user,
-        data: { title, chats },
-      });
-    }
+    await collection.insertOne({
+      metadata: { c: now },
+      user,
+      data: { title, chats },
+    });
 
     return res.send({ status: 'success', data: { title } });
   } catch (error) {
