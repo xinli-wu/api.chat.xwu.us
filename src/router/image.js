@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
-const openai = require('../openai/image');
+const { openai } = require('../openai/image');
 const auth = require('../middleware/auth');
 const utils = require('../middleware/utils');
 
@@ -49,14 +49,14 @@ router.use([utils, auth], async (req, res, next) => {
 router.post('/create', auth, async (req, res) => {
   const { prompt } = req.body;
   try {
-    const response = await openai.createImage({
+    const response = await openai.images.generate({
       prompt,
       n: 1,
       size: '256x256',
       response_format: 'b64_json',
     });
 
-    res.send({ status: 'success', data: response.data.data });
+    res.send({ status: 'success', data: response });
   } catch (error) {
     console.log(error);
     // Consider adjusting the error handling logic for your use case
