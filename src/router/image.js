@@ -1,12 +1,11 @@
 const express = require('express');
-
-const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const { openai } = require('../openai/image');
 const auth = require('../middleware/auth');
 const utils = require('../middleware/utils');
 
+const router = express.Router();
 const db = mongoose.connection;
 
 // middleware that is specific to this router
@@ -46,13 +45,24 @@ router.use([utils, auth], async (req, res, next) => {
   return next();
 });
 
+const models = [
+  { group: 'OpenAI', id: 'dall-e-3', desc: '' },
+  { group: 'OpenAI', id: 'dall-e-2', desc: '' },
+];
+
+router.get('/models', async (_req, res) => res.send({ status: 'success', data: models }));
+
 router.post('/create', auth, async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, config } = req.body;
+  const isSupportedModel = models.find((m) => m.id === config.model.id);
+
+  if (!isSupportedModel) return res.status(400).json({ message: 'Model not supported' });
+
   try {
     const response = await openai.images.generate({
+      model: config.model.id,
       prompt,
       n: 1,
-      size: '256x256',
       response_format: 'b64_json',
     });
 
@@ -72,6 +82,7 @@ router.post('/create', auth, async (req, res) => {
       });
     }
   }
+  return res.end();
 });
 
 module.exports = router;
