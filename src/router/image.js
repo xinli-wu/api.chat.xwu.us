@@ -8,6 +8,13 @@ const utils = require('../middleware/utils');
 const router = express.Router();
 const db = mongoose.connection;
 
+const models = [
+  { group: 'OpenAI', id: 'dall-e-3', desc: '' },
+  { group: 'OpenAI', id: 'dall-e-2', desc: '' },
+];
+
+router.get('/models', async (_req, res) => res.send({ status: 'success', data: models }));
+
 // middleware that is specific to this router
 router.use([utils, auth], async (req, res, next) => {
   const collection = db.collection('create-image-log');
@@ -44,13 +51,6 @@ router.use([utils, auth], async (req, res, next) => {
 
   return next();
 });
-
-const models = [
-  { group: 'OpenAI', id: 'dall-e-3', desc: '' },
-  { group: 'OpenAI', id: 'dall-e-2', desc: '' },
-];
-
-router.get('/models', async (_req, res) => res.send({ status: 'success', data: models }));
 
 router.post('/create', auth, async (req, res) => {
   const { prompt, config } = req.body;
