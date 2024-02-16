@@ -1,22 +1,22 @@
 const express = require('express');
-
-const router = express.Router();
 const dayjs = require('dayjs');
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
-
-const db = mongoose.connection;
 const { openai } = require('../openai/chat');
 const utils = require('../middleware/utils');
 
+const router = express.Router();
+
+const db = mongoose.connection;
 const models = [
-  // { group: 'GPT-4', id: 'gpt-4', desc: '' },
   // { group: 'GPT-4', id: 'gpt-4-32k', desc: '' },
-  { group: 'GPT-3.5', id: 'gpt-3.5-turbo-0613', desc: '' },
+  { group: 'OpenAI', id: 'gpt-3.5-turbo', desc: '' },
+  { group: 'OpenAI', id: 'gpt-3.5-turbo-0613', desc: '' },
+  { group: 'OpenAI', id: 'gpt-4', desc: '' },
   // { group: 'GPT-3.5', id: 'gpt-3.5-turbo-16k', desc: '' },
 ];
 
-router.get('/getModels', async (_req, res) => res.send({ status: 'success', data: models }));
+router.get('/models', async (_req, res) => res.send({ status: 'success', data: models }));
 
 router.use([utils, auth], async (req, res, next) => {
   const collection = db.collection('chats');
@@ -56,7 +56,7 @@ router.post('/completion', async (req, res) => {
   if (!isSupportedModel) return res.status(400).json({ message: 'Model not supported' });
 
   try {
-    const stream = await openai.beta.chat.completions.stream({
+    const stream = await openai.chat.completions.create({
       messages,
       model: config.model.id,
       stream: true,
@@ -65,8 +65,6 @@ router.post('/completion', async (req, res) => {
     for await (const chunk of stream) {
       res.write(`${JSON.stringify(chunk)}\n`);
     }
-
-    return res.end();
   } catch (error) {
     console.log(error);
     // Consider adjusting the error handling logic for your use case
@@ -81,6 +79,7 @@ router.post('/completion', async (req, res) => {
       },
     });
   }
+  return res.end();
 });
 
 module.exports = router;
