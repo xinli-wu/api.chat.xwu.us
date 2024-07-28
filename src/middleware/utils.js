@@ -1,9 +1,9 @@
-const dayjs = require('dayjs');
+import dayjs from 'dayjs';
 
-const utils = async (req, res, next) => {
+export const utils = async (req, res, next) => {
   const now = dayjs().toDate();
   req.utils = { now };
   return next();
 };
 
-module.exports = utils;
+export default utils;

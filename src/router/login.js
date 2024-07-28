@@ -1,13 +1,13 @@
-const { Buffer } = require('node:buffer');
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const User = require('../model/user');
-const { simpleEmail } = require('../utils/email');
-const disposableEmailBlocker = require('../middleware/disposableEmailBlocker');
-const { genAccessToken, genRefershToken } = require('../utils/token');
-const utils = require('../middleware/utils');
+import { Buffer } from 'node:buffer';
+import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../model/user.js';
+import { simpleEmail } from '../utils/email.js';
+import disposableEmailBlocker from '../middleware/disposableEmailBlocker.js';
+import { genAccessToken, genRefershToken } from '../utils/token.js';
+import utils from '../middleware/utils.js';
 
-const router = express.Router();
+const router = Router();
 const sendOTP = async ({ origin, email, otp }) => {
   const link = `${origin}/login?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
 
@@ -109,4 +109,4 @@ router.post('/', disposableEmailBlocker, async (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

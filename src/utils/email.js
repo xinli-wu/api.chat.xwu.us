@@ -1,13 +1,13 @@
-const nodemailer = require('nodemailer');
+import { createTransport } from 'nodemailer';
 
 const { EMAIL_HOST, EMAIL_USER, EMAIL_PASS } = process.env;
 
-const simpleEmail = async ({ to, subject, text, html = undefined }) => {
+export const simpleEmail = async ({ to, subject, text, html = undefined }) => {
   if (!EMAIL_HOST || !EMAIL_USER || !EMAIL_PASS) {
     return Promise.reject(new Error('Missing EMAIL_HOST, EMAIL_USER, EMAIL'));
   }
 
-  const transporter = nodemailer.createTransport({
+  const transporter = createTransport({
     host: EMAIL_HOST,
     port: 587,
     secure: false, // true for 465, false for other ports
@@ -32,5 +32,3 @@ const simpleEmail = async ({ to, subject, text, html = undefined }) => {
     return Promise.reject(error);
   }
 };
-
-module.exports = { simpleEmail };

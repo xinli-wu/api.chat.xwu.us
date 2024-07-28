@@ -1,4 +1,4 @@
-const planConfig = [
+export const planConfig = [
   {
     id: null,
     price: null,
@@ -45,20 +45,14 @@ const planConfig = [
   },
 ];
 
-const features = () => [
+export const features = () => [
   { id: 1, desc: 'Chat completion per day' },
   { id: 2, desc: 'Image generation per day' },
   { id: 3, desc: 'Save prompt history to Cloud' },
 ];
-const plans = ({ prices }) =>
+export const plans = ({ prices }) =>
   planConfig.map((plan) => ({
     ...plan,
     id: prices.find((x) => x.metadata.displayName === plan.name)?.id || null,
     price: prices.find((x) => x.metadata.displayName === plan.name)?.unit_amount || 0,
   }));
-
-module.exports = {
-  plans,
-  planConfig,
-  features,
-};

@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
-const User = require('../model/user');
-const Subscription = require('../model/subscription');
-const { planConfig } = require('../router/stripe/plans');
+import jwt from 'jsonwebtoken';
+import User from '../model/user.js';
+import Subscription from '../model/subscription.js';
+import { planConfig } from '../router/stripe/plans.js';
 
 const config = process.env;
 
@@ -28,4 +28,4 @@ const auth = async (req, res, next) => {
   return next();
 };
 
-module.exports = auth;
+export default auth;

@@ -1,18 +1,18 @@
-const express = require('express');
-const dayjs = require('dayjs');
-const mongoose = require('mongoose');
-const auth = require('../middleware/auth');
-const { openai } = require('../openai/chat');
-const utils = require('../middleware/utils');
+import { Router } from 'express';
+import dayjs from 'dayjs';
+import mongoose from 'mongoose';
+import auth from '../middleware/auth.js';
+import utils from '../middleware/utils.js';
+import openai from '../openai/openai.js';
 
-const router = express.Router();
-
+const router = Router();
 const db = mongoose.connection;
+
 const models = [
   // { group: 'GPT-4', id: 'gpt-4-32k', desc: '' },
-  { group: 'OpenAI', id: 'gpt-3.5-turbo', desc: '' },
-  { group: 'OpenAI', id: 'gpt-3.5-turbo-0613', desc: '' },
+  { group: 'OpenAI', id: 'gpt-4o-mini', desc: '' },
   { group: 'OpenAI', id: 'gpt-4', desc: '' },
+  { group: 'OpenAI', id: 'gpt-3.5-turbo', desc: '' },
   // { group: 'GPT-3.5', id: 'gpt-3.5-turbo-16k', desc: '' },
 ];
 
@@ -82,4 +82,4 @@ router.post('/completion', async (req, res) => {
   return res.end();
 });
 
-module.exports = router;
+export default router;

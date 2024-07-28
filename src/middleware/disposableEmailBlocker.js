@@ -1,10 +1,13 @@
-const { default: axios } = require('axios');
-const localBlockList = require('../assets/email.block.json');
+import axios from 'axios';
+import { readFile } from 'node:fs/promises';
+const fileUrl = new URL("../assets/email.block.json", import.meta.url);
 
 const BLOCK_LIST_URL =
   'https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/master/disposable_email_blocklist.conf';
 
 const disposableEmailBlocker = async (req, res, next) => {
+  const localBlockList = JSON.parse(await readFile(fileUrl, 'utf8'));
+
   let { email } = req.body;
   email = email.toLowerCase();
   const { data } = (await axios(BLOCK_LIST_URL, { responseType: 'text' })) || {};
@@ -23,4 +26,4 @@ const disposableEmailBlocker = async (req, res, next) => {
   return next();
 };
 
-module.exports = disposableEmailBlocker;
+export default disposableEmailBlocker;

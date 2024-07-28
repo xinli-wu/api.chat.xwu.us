@@ -1,23 +1,22 @@
-const { config } = require('dotenv');
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import conn from './db/conn.js';
+import chat from './router/chat.js';
+import image from './router/image.js';
+import login from './router/login.js';
+import me from './router/me.js';
+import my from './router/my.js';
 
-config();
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-
-const conn = require('./db/conn');
-
+dotenv.config();
 conn();
-const chat = require('./router/chat');
-const image = require('./router/image');
-const login = require('./router/login');
-const me = require('./router/me');
-const my = require('./router/my');
-const stripe = require('./router/stripe/stripe');
 
 const app = express();
 const port = 4000;
 
+app.use(express.json());
+// app.use(express.urlencoded());
 app.use(
   cors({
     origin: [...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []), 'https://chat.xwu.us'],
@@ -25,7 +24,7 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '1mb' }));
+// app.use(json({ limit: '1mb' }));
 app.use(cookieParser());
 
 app.use('/openai/chat', chat);
@@ -34,10 +33,10 @@ app.use('/openai/image', image);
 app.use('/login', login);
 app.use('/me', me);
 app.use('/my', my);
-app.use('/stripe', stripe);
+// // app.use('/stripe', stripe);
 
 app.listen(port, () => {
   console.log(`API listening on port ${port}`);
 });
 
-module.exports = app;
+export default app;

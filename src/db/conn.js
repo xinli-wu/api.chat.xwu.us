@@ -1,10 +1,11 @@
-const mongoose = require('mongoose');
-const { config } = require('dotenv');
-
-config();
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+dotenv.config();
 
 const { MONGO_HOST, MONGO_PORT, MONGO_DB, MONGO_USER, MONGO_PASS } = process.env;
+
 const db = mongoose.connection;
+
 const conn = () => {
   mongoose.connect(`mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`, {
     user: MONGO_USER,
@@ -16,4 +17,4 @@ const conn = () => {
   });
 };
 
-module.exports = conn;
+export default conn;

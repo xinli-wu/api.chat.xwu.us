@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose';
 
-const subscriptionSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+const subscriptionSchema = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: 'user' },
   subscription: { type: Object },
   history: { type: Array, default: [] },
 });
 
-module.exports = mongoose.model('subscription', subscriptionSchema);
+export default model('subscription', subscriptionSchema);

@@ -1,11 +1,12 @@
-const express = require('express');
-const dayjs = require('dayjs');
-const mongoose = require('mongoose');
-const { openai } = require('../openai/image');
-const auth = require('../middleware/auth');
-const utils = require('../middleware/utils');
+import { Router } from 'express';
+import dayjs from 'dayjs';
+import mongoose from 'mongoose';
 
-const router = express.Router();
+import auth from '../middleware/auth.js';
+import utils from '../middleware/utils.js';
+import openai from '../openai/openai.js';
+
+const router = Router();
 const db = mongoose.connection;
 
 const models = [
@@ -85,4 +86,4 @@ router.post('/create', auth, async (req, res) => {
   return res.end();
 });
 
-module.exports = router;
+export default router;

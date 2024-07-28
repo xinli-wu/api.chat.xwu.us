@@ -1,11 +1,11 @@
-const express = require('express');
+import { Router } from 'express';
 
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
-const { genAccessToken } = require('../utils/token');
-const User = require('../model/user');
-const Subscription = require('../model/subscription');
+const router = Router();
+import jwt from 'jsonwebtoken';
+import auth from '../middleware/auth.js';
+import { genAccessToken } from '../utils/token.js';
+import User from '../model/user.js';
+import Subscription from '../model/subscription.js';
 
 const { JWT_REFRESH_TOKEN_SECRET } = process.env;
 
@@ -78,4 +78,4 @@ router.post('/logout', async (req, res) => {
   return res.json({ status: 'success', message: 'User logged out successfully' });
 });
 
-module.exports = router;
+export default router;

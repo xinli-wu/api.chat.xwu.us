@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose';
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   email: { type: String, unique: true },
   token: { type: String },
-  metadata: { type: mongoose.Schema.Types.Mixed },
+  metadata: { type: Schema.Types.Mixed },
 });
 
-module.exports = mongoose.model('user', userSchema);
+export default model('user', userSchema);
