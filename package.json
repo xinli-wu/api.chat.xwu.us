@@ -8,8 +8,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon",
-    "build": "esbuild src/index.js --bundle --minify --platform=node --external:./node_modules/* --outfile=dist/index.js",
-    "serve": "node dist/index.js",
+    "build": "node build.js",
+    "serve": "node dist/bundle.cjs",
     "lint": "eslint src '*.js'",
     "lint:fix": "eslint --fix src '*.js'",
     "format": "prettier --write ./src",
