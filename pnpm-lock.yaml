@@ -70,8 +70,8 @@ importers:
         specifier: ^15.2.7
         version: 15.2.7
       nodemon:
-        specifier: ^3.1.4
-        version: 3.1.4
+        specifier: ^3.1.9
+        version: 3.1.9
       prettier:
         specifier: 3.3.3
         version: 3.3.3
@@ -1132,8 +1132,8 @@ packages:
     resolution: {integrity: sha512-Dobp/ebDKBvz91sbtRKhcznLThrKxKt97GI2FAlAyy+fk19j73Uz3sBXolVtmcXjaorivqsbbbjDY+Jkt4/bQA==}
     engines: {node: '>=6.0.0'}
 
-  nodemon@3.1.4:
-    resolution: {integrity: sha512-wjPBbFhtpJwmIeY2yP7QF+UKzPfltVGtfce1g/bB15/8vCGZj8uxD62b/b9M9/WVgme0NZudpownKN+c0plXlQ==}
+  nodemon@3.1.9:
+    resolution: {integrity: sha512-hdr1oIb2p6ZSxu3PB2JWWYS7ZQ0qvaZsc3hK8DR8f02kRzc8rjYmxAIvdz+aYC+8F2IjNaB7HMcSDg8nQpJxyg==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -2565,7 +2565,7 @@ snapshots:
 
   nodemailer@6.9.14: {}
 
-  nodemon@3.1.4:
+  nodemon@3.1.9:
     dependencies:
       chokidar: 3.6.0
       debug: 4.3.6(supports-color@5.5.0)
